@@ -13,7 +13,7 @@ interface CategoricalBar extends Bar{
 
 
 
-export default function Example() {
+export default function Example({ theme }) {
   const [bars, setBars] = useState<CategoricalBar[]>([]);
   const barRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<ComponentSize>({ width: 0, height: 0 });
@@ -21,7 +21,11 @@ export default function Example() {
   const onResize = useDebounceCallback((size: ComponentSize) => setSize(size), 200)
 
   useResizeObserver({ ref: barRef, onResize });
-  
+  useEffect(() => {
+    if (barRef.current) {
+      barRef.current.style.backgroundColor = theme.palette.background.default;
+    }
+  }, [theme]);
   useEffect(() => {
     // For reading json file
     /*if (isEmpty(dataFromJson)) return;
@@ -84,22 +88,32 @@ export default function Example() {
     const xAxis = chartContainer.append('g')
       .attr('transform', `translate(0, ${size.height - margin.bottom})`)
       .call(d3.axisBottom(xScale))
+      .selectAll("text")
+      .style("fill", theme.palette.text.primary);
+
 
     const yAxis = chartContainer.append('g')
       .attr('transform', `translate(${margin.left}, 0)`)
       .call(d3.axisLeft(yScale))
+      .selectAll("text")
+      .style("fill", theme.palette.text.primary);
 
     const yLabel = chartContainer.append('g')
       .attr('transform', `translate(${margin.left / 2}, ${size.height / 2}) rotate(-90)`)
       .append('text')
       .text('Value')
       .style('font-size', '.8rem')
+      .style("fill", theme.palette.text.primary);
+
+    chartContainer.selectAll('.domain, .tick line')
+      .style("stroke", theme.palette.text.primary);
 
     const xLabel = chartContainer.append('g')
       .attr('transform', `translate(${(size.width - margin.left) / 2}, ${size.height - margin.top})`)
       .append('text')
       .text('Categories')
       .style('font-size', '.8rem')
+      .style("fill", theme.palette.text.primary);
     
     // "g" is grouping element that does nothing but helps avoid DOM looking like a mess
     // We iterate through each <CategoricalBar> element in the array, create a rectangle for each and indicate the coordinates, the rectangle, and the color.
@@ -113,7 +127,7 @@ export default function Example() {
       // specify the size of the rectangle
       .attr('width', xScale.bandwidth())
       .attr('height', (d: CategoricalBar) => Math.abs(yScale(0) - yScale(d.value))) // this substraction is reversed so the result is non-negative
-      .attr('fill', 'teal')
+      .attr('fill', theme.palette.primary.main)
 
     // For transform, check out https://www.tutorialspoint.com/d3js/d3js_svg_transformation.htm, but essentially we are adjusting the positions of the selected elements.
     const title = chartContainer.append('g')
@@ -121,6 +135,7 @@ export default function Example() {
       .attr('transform', `translate(${size.width / 2}, ${size.height - margin.top + 15})`)
       .attr('dy', '0.5rem') // relative distance from the indicated coordinates.
       .style('text-anchor', 'middle')
+      .style("fill", theme.palette.text.primary)
       .style('font-weight', 'bold')
       .text('Distribution of Demo Data') // text content    
   }
