@@ -1,4 +1,4 @@
-import Example from './components/Example'
+import SankeyPlot from './components/Visualizations/SankeyPlot'
 import Notes from './components/Notes'
 import Navbar from './components/Navbar/Navbar'
 import Footer from './components/Footer/Footer'
@@ -31,17 +31,13 @@ function Layout() {
     <div>
       <Navbar />
       <Grid container spacing={1} direction='column' id="main-container">
-        <Grid container item xs={6} sm={6} md={6} lg={6}>
-          <Grid item xs={5} sm={5} md={5} lg={5}>
-            <Example theme={theme}/>
+        <Grid container item xs={6} sm={6} md={6} lg={6} sx={{ height: '100%' }}>
+            <Grid item xs={12} className="plot" sx={{ height: '100%' }}>
+              <div style={{ width: '100%', height: '100%'}}> 
+                <SankeyPlot theme={theme} />
+              </div>
+            </Grid>
           </Grid>
-          <Grid item xs sm md lg/>
-        </Grid>
-        <Grid item xs sm md lg>
-          {
-          <Notes msg={"This is a message sent from App.tsx as component prop"} />
-          }
-        </Grid>
       </Grid>
       <Footer />
     </div>

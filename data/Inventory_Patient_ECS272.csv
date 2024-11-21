@@ -1,4 +1,4 @@
-Patient OD,Gender,Race,Age,BMI,Ethnicity,Anatomic Site,Diagnosis per OR schedule,Status,Staging (TNM),Staging (Overall),HPV/p16 status,Occult Node,Notes,Cell Type,Site,pos
+Patient_OD,Gender,Race,Age,BMI,Ethnicity,Anatomic_Site,Diagnosis_per_OR_schedule,Status,Staging_TNM,Staging_Overall,HPV/p16_status,Occult_Node,Notes,Cell_Type,Site,pos
 94,Male Gender,White,51,30.1,Not Hispanic or Latino,"Head, face or neck, NOS",HISTORY OF TONGUE CANCER,Malignant,pT2N2bM0,IVA,No,No,Nan,Squamous cell carcinoma,Oral cavity,No
 166,Female Gender,White,72,20,Not Hispanic or Latino,"Head, face or neck, NOS",VERRUCOUS CARCINOMA (HCC),Malignant,pT1N0M0,I,No,No,"Multiple prior head and neck cancer treated with surgery, radiation",Squamous cell carcinoma,Oral cavity,No
 191,Male Gender,White,58,33.3,Not Hispanic or Latino,"Head, face or neck, NOS",HEAD AND NECK CANCER,Malignant,pT0N3bM0,IVA,No,No,"Multiple prior head and neck cancer treated with surgery, radiation",Squamous cell carcinoma,Neck,No
