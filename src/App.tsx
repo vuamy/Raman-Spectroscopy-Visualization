@@ -30,7 +30,6 @@ function Layout() {
       <Navbar />
       <Grid container spacing={1} direction='column' id="main-container">
         <Grid container item xs={6} sm={6} md={6} lg={6} sx={{ height: '100%' }}>
-<<<<<<< HEAD
           <Grid item xs={12} className="plot" sx={{ height: '100%' }}>
             <div style={{ width: '100%', height: '100%'}}> 
               <SankeyPlot theme={theme} />
@@ -44,14 +43,6 @@ function Layout() {
               </div> 
             </Grid>
         </Grid>
-=======
-            <Grid item xs={12} className="plot" sx={{ height: '100%' }}>
-              <div style={{ width: '100%', height: '100%'}}> 
-                <SankeyPlot theme={theme} />
-              </div>
-            </Grid>
-          </Grid>
->>>>>>> 010d2fffd76098aab87c5f1c936a78103f8f357e
       </Grid>
       <Footer />
     </div>
