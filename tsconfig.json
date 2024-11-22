@@ -17,9 +17,5 @@
     "noEmit": true,
     "jsx": "react-jsx",
   },
-<<<<<<< HEAD
-  "include": ["src", "vite.config.ts", "pages"]
-=======
   "include": ["src", "vite.config.ts"]
->>>>>>> 010d2fffd76098aab87c5f1c936a78103f8f357e
 }

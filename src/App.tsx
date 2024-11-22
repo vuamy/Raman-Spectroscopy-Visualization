@@ -1,19 +1,9 @@
 import SankeyPlot from './components/Visualizations/SankeyPlot'
-<<<<<<< HEAD
 import WavelengthPlot from './components/Visualizations/WavelengthPlot'
 import Navbar from './components/Navbar/Navbar'
 import Footer from './components/Footer/Footer'
 import Grid from '@mui/material/Grid';
 import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
-=======
-import Notes from './components/Notes'
-import Navbar from './components/Navbar/Navbar'
-import Footer from './components/Footer/Footer'
-import { NotesWithReducer, CountProvider } from './components/NotesWithReducer';
-import Grid from '@mui/material/Grid';
-import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
-import { grey } from '@mui/material/colors';
->>>>>>> 010d2fffd76098aab87c5f1c936a78103f8f357e
 
 // Adjust the color theme for material ui
 const theme = createTheme({

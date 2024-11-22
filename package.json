@@ -29,10 +29,7 @@
   "devDependencies": {
     "@types/d3-sankey": "^0.12.4",
     "@types/material-ui": "^0.21.17",
-<<<<<<< HEAD
     "@types/node": "^22.9.1",
-=======
->>>>>>> 010d2fffd76098aab87c5f1c936a78103f8f357e
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",

@@ -255,20 +255,11 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
         // Get column info for each attribute
         const columns = d3.group(graph.nodes, d => d.x0);
         const sortedColumns = Array.from(columns).sort(([x0A], [x0B]) => (x0A || 0) - (x0B || 0));
-<<<<<<< HEAD
-=======
-        console.log(columns)
->>>>>>> 010d2fffd76098aab87c5f1c936a78103f8f357e
         const columnLabels = svg.append("g")
             .attr("class", "column-labels");
 
         // Create labels
         const levels = ['Stage', 'Gender', 'Ethnicity', 'Race', 'BMI'];
-<<<<<<< HEAD
-
-=======
-        
->>>>>>> 010d2fffd76098aab87c5f1c936a78103f8f357e
         sortedColumns.forEach(([xPosition, nodes], index) => {
             columnLabels.append("text")
                 .attr("x", (xPosition || 0) + 40)
