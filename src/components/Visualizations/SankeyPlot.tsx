@@ -344,6 +344,56 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
             }
         }
 
+        // Create tooltip for hovering on paths
+        const tooltip = svg
+            .append("g")
+            .attr("id", "tooltip")
+            .style("pointer-events", "none")
+            .style("visibility", "hidden");
+
+        // Add a background rectangle for the tooltip
+        const tooltipRect = tooltip
+            .append("rect")
+            .attr("fill", "rgba(0, 0, 0, 0.8)")
+            .attr("rx", 4)
+            .attr("ry", 4)
+
+        // Add text to the tooltip
+        const tooltipText = tooltip
+            .append("text")
+            .attr("fill", "white")
+            .attr("x", 10)
+            .attr("y", 20)
+            .attr("padding", 0)
+            .style("font-size", "10px")
+            .style("font-family", "Arial, sans-serif");
+
+        // Connect tooltip to paths
+        sankeyLinks
+            // On hover, display tooltip
+            .on("mouseover", function (event, d) {
+                tooltip.style("visibility", "visible");
+                const tooltipContent = `${d.source.id} → ${d.target.id}\n, Count: ${d.value}`;
+                tooltipText.text(tooltipContent);
+                const bbox = tooltipText.node().getBBox();
+
+                tooltipRect
+                    .attr("width", bbox.width + 10) 
+                    .attr("height", bbox.height + 5)
+                    .attr("x", bbox.x - 5)
+                    .attr("y", bbox.y - 2.5);
+
+            })
+            // When moving mouse, tooltip follows cursor
+            .on("mousemove", function (event, d) {
+                const [x, y] = d3.pointer(event, svg.node());
+                tooltip.attr("transform", `translate(${x + 10}, ${y - 20})`);
+            })
+            // No longer on path, hides tooltip
+            .on("mouseout", function () {
+                tooltip.style("visibility", "hidden");
+            });
+
     }
 
     return (
