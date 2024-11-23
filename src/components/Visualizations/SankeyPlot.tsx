@@ -5,6 +5,7 @@ import { sankey, sankeyLinkHorizontal } from 'd3-sankey';
 import { isEmpty } from 'lodash';
 import { useResizeObserver, useDebounceCallback } from 'usehooks-ts';
 import { ComponentSize, Margin } from '../../types';
+import { MarginOutlined } from '@mui/icons-material';
 
 // Constructing interfaces and types
 
@@ -216,9 +217,12 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
         // Compute the diagram layout
         const graph = sankeyDiagram(sankeyData);
 
+        // Create zoomable group
+        const zoomableGroup = svg.append("g")
+            .attr("class", "zoomable");
+
         // Create sankey links
-        const sankeyLinks = svg.append("g")
-        .selectAll(".link")
+        const sankeyLinks = zoomableGroup.selectAll(".link")
         .data(graph.links)
         .enter()
         .append("path")
@@ -230,8 +234,7 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
         .style("opacity", 0.8)
 
         // Create sankey nodes 
-        const sankeyNodes = svg.append("g")
-            .selectAll()
+        const sankeyNodes = zoomableGroup.selectAll()
             .data(graph.nodes)
             .join("rect")
             .attr("x", d => d.x0 as number)
@@ -243,8 +246,7 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
             .attr("cursor", "pointer")
 
         // Create node labels
-        const sankeyLabels = svg.append("g")
-            .selectAll()
+        const sankeyLabels = zoomableGroup.selectAll()
             .data(graph.nodes)
             .join("text")
             .attr("x", d => (d.x0 as number))
@@ -258,8 +260,7 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
         // Get column info for each attribute
         const columns = d3.group(graph.nodes, d => d.x0);
         const sortedColumns = Array.from(columns).sort(([x0A], [x0B]) => (x0A || 0) - (x0B || 0));
-        const columnLabels = svg.append("g")
-            .attr("class", "column-labels");
+        const columnLabels = zoomableGroup.attr("class", "column-labels");
 
         // Create labels
         const levels = ['Stage', 'Gender', 'Hispanic/Latino', 'Race', 'BMI'];
@@ -270,7 +271,7 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
                 .attr("text-anchor", "start")
                 .text(getColumnLabel(index as number))
                 .style("font-size", "16px")
-                .style("fill", "white");
+                .style("fill", "white")
         });
 
         // Column label helper function
@@ -393,6 +394,97 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
             .on("mouseout", function () {
                 tooltip.style("visibility", "hidden");
             });
+
+        // Add buttons for zooming in and out
+        const zoomButtonsGroup = svg.append("g")
+            .attr("class", "zoom-buttons")
+            .attr("transform", `translate(0, ${-margin.top + 20})`)
+            .attr("position", "absolute")
+
+        const zoomInButton = zoomButtonsGroup.append("rect")
+            .attr("width", 20)
+            .attr("height", 20)
+            .attr("fill", "#6d1d81")
+            .attr("rx", 5)
+        
+        const zoomInText = zoomButtonsGroup.append("text")
+            .attr("x", 10)
+            .attr("y", 17)
+            .attr("text-anchor", "middle")
+            .attr("fill", "white")
+            .attr("font-size", 20)
+            .text("+")  
+            .attr("cursor", "pointer");
+        
+        const zoomOutButton = zoomButtonsGroup.append("rect")
+            .attr("x", 30)
+            .attr("width", 20)
+            .attr("height", 20)
+            .attr("fill", "#6d1d81")
+            .attr("rx", 5)
+        
+        const zoomOutText = zoomButtonsGroup.append("text")
+            .attr("x", 40)
+            .attr("y", 15)
+            .attr("text-anchor", "middle")
+            .attr("fill", "white")
+            .attr("font-size", 20)
+            .text("-")
+            .attr("cursor", "pointer");
+
+        const resetButton = zoomButtonsGroup.append("rect")
+            .attr("x", 60)
+            .attr("width", 50)
+            .attr("height", 20)
+            .attr("fill", "#6d1d81")
+            .attr("rx", 5)
+        
+        const resetText = zoomButtonsGroup.append("text")
+            .attr("x", 85)
+            .attr("y", 14)
+            .attr("text-anchor", "middle")
+            .attr("fill", "white")
+            .attr("font-size", 12)
+            .text("Reset")
+            .attr("cursor", "pointer");
+        
+        // Minimum and maximum zoom
+        const minZoom = 0.5
+        const maxZoom = 20
+
+        // Use d3 to add zoom to entire SVG
+        const zoom = d3.zoom()
+            .scaleExtent([minZoom, maxZoom])
+            .translateExtent([[0, 0], [width * 1.5, height * 1.5]])
+            .on("zoom", zoomed);
+        svg.call(zoom).on("wheel.zoom", null);
+
+        // Zoom function to handle update of sankeyContainer
+        function zoomed(event) {
+            zoomableGroup.attr("transform", event.transform);
+        }
+
+        // Handle zoom in
+        zoomInText.on("click", function() {
+            const currentTransform = d3.zoomTransform(zoomableGroup.node());
+            console.log(currentTransform)
+            const newZoomLevel = Math.min(currentTransform.k * 1.2, maxZoom);
+            const newTransform = d3.zoomIdentity.translate(currentTransform.x, currentTransform.y).scale(newZoomLevel);
+            svg.transition().duration(250).call(zoom.transform, newTransform);
+        });
+
+        // Handle zoom out
+        zoomOutText.on("click", function() {
+            const currentTransform = d3.zoomTransform(zoomableGroup.node());
+            const newZoomLevel = Math.max(currentTransform.k / 1.2, minZoom);
+            const newTransform = d3.zoomIdentity.translate(currentTransform.x, currentTransform.y).scale(newZoomLevel);
+            svg.transition().duration(250).call(zoom.transform, newTransform);
+        });
+
+        // Handle reset zoom
+        resetText.on("click", function() {
+            svg.transition().duration(250).call(zoom.transform, d3.zoomIdentity);
+        });
 
     }
 
