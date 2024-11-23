@@ -50,7 +50,7 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
     const [sankeyData, setSankey] = useState<SankeyData>({ nodes: [], links: [] });
     const sankeyRef = useRef<HTMLDivElement>(null);
     const [size, setSize] = useState<ComponentSize>({ width: 0, height: 0 });
-    const margin: Margin = { top: 50, right: 100, bottom: 50, left: 100 };
+    const margin: Margin = { top: 75, right: 100, bottom: 10, left: 100 };
     const onResize = useDebounceCallback((size: ComponentSize) => setSize(size), 200)
 
     useResizeObserver({ ref: sankeyRef, onResize });
@@ -183,7 +183,7 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
                     "translate(" + margin.left + "," + margin.top + ")");
 
         // Initialize color scale
-        const color = d3.scaleOrdinal(["#221150","#400f74","#6d1d81","#701f81","#932b80","#a02f7f","#b2357b","#d8456c","#e04c67"]);
+        const color = d3.scaleOrdinal(["#4A90E2", "#6C63FF", "#7B2CBF", "#9B5DE5", "#C084FC", "#FF89BB", "#FF5D8F", "#FF2E63", "#D72638", "#851DE0"] );
 
         // Create sankey and set properties
         const sankeyDiagram = sankey()
@@ -226,7 +226,8 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
         .attr("d", sankeyLinkHorizontal())
         .style("fill", "none") // Ensure no fill for paths
         .style("stroke", d => color(d.source.id)) // Use your color function
-        .style("stroke-width", d => Math.max(1, (d.width || 0)));
+        .style("stroke-width", d => Math.max(1, (d.width || 0)))
+        .style("opacity", 0.8)
 
         // Create sankey nodes 
         const sankeyNodes = svg.append("g")
@@ -236,16 +237,18 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
             .attr("x", d => d.x0 as number)
             .attr("y", d => d.y0 as number)
             .attr("height", d => d.y1 as number - (d.y0 as number))
-            .attr("width", d => d.x1 as number - (d.x0 as number))
-            .attr("fill", d => color(d.id)); // Flagged for error but it works
+            .attr("width", d => d.x1 as number - (d.x0 as number) + 30)
+            .attr("fill", d => color(d.id)) // Flagged for error but it works
+            .on("click", (_, node) => handleNodeClick(node)) // Highlighting
+            .attr("cursor", "pointer")
 
         // Create node labels
         const sankeyLabels = svg.append("g")
             .selectAll()
             .data(graph.nodes)
             .join("text")
-            .attr("x", d => (d.x0 as number) - 10)
-            .attr("y", d => (d.y0 as number) + 10)
+            .attr("x", d => (d.x0 as number))
+            .attr("y", d => (d.y0 as number))
             .attr("dy", "0.35em")
             .attr("text-anchor", "start")
             .attr("fill", "white")
@@ -259,12 +262,12 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
             .attr("class", "column-labels");
 
         // Create labels
-        const levels = ['Stage', 'Gender', 'Ethnicity', 'Race', 'BMI'];
+        const levels = ['Stage', 'Gender', 'Hispanic/Latino', 'Race', 'BMI'];
         sortedColumns.forEach(([xPosition, nodes], index) => {
             columnLabels.append("text")
-                .attr("x", (xPosition || 0) + 40)
-                .attr("y", 0)
-                .attr("text-anchor", "end")
+                .attr("x", (xPosition || 0))
+                .attr("y", -5)
+                .attr("text-anchor", "start")
                 .text(getColumnLabel(index as number))
                 .style("font-size", "16px")
                 .style("fill", "white");
@@ -278,13 +281,68 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
         // Create plot label
         const title = sankeyContainer.append('g')
             .append('text')
-            .attr('transform', `translate(${size.width / 2}, ${size.height - margin.top + 15})`)
+            .attr('transform', `translate(${size.width / 2}, ${margin.top / 2})`)
             .attr('dy', 0)
             .style('text-anchor', 'middle')
             .style("fill", theme.palette.text.primary)
             .style('font-weight', 'bold')
             .style('font-size', '18px')
             .text('Patient Metadata Distribution')
+
+        // Track if currently in higlighted state
+        let isHighlighted = false;
+
+        // Track the currently highlighted node
+        let currentHighlightedNode = null;
+
+        // Helper function to handle highlighting on click
+        function handleNodeClick(node) {
+
+            if (currentHighlightedNode === node.id) {
+
+                currentHighlightedNode = null;
+                isHighlighted = false;
+
+                // Reset to default
+                sankeyLinks
+                    .transition()
+                    .duration(500)
+                    .style("stroke-opacity", 0.8)
+                    .style("stroke", d => color(d.source.id));
+                sankeyNodes
+                    .transition()
+                    .duration(500)
+                    .style("opacity",1);
+            
+            } else {
+                
+                currentHighlightedNode = node.id;
+                isHighlighted = true;
+
+                // Highlight connected links
+                sankeyLinks
+                    .transition()
+                    .duration(500)
+                    .style("stroke-opacity", d =>
+                        d.source.id === node.id || d.target.id === node.id ? 1 : 0.2
+                    )
+                    .style("stroke", d =>
+                        d.source.id === node.id || d.target.id === node.id ? "#E2B6FF" : color(d.source.id)
+                    );
+                    
+            
+                // Highlight connected nodes
+                sankeyNodes
+                    .transition()
+                    .duration(500)
+                    .style("opacity", d =>
+                        d.id === node.id || graph.links.some(link => 
+                            (link.source.id === node.id && link.target.id === d.id) ||
+                            (link.target.id === node.id && link.source.id === d.id)
+                        ) ? 1 : 0.5);
+
+            }
+        }
 
     }
 

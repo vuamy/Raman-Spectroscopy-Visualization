@@ -38,9 +38,10 @@ function Layout() {
         </Grid>
         <Grid container item xs={6} sm={6} md={6} lg={6} sx={{ height: '100%' }}>
           <Grid item xs={12} className="plot" sx={{ height: '100%' }}>
-              <div style={{ width: '100%', height: '100%'}}> 
+            {/* Temporarily hide so website doesn't lag */}
+              {/* <div style={{ width: '100%', height: '100%'}}> 
                 <WavelengthPlot theme={theme} />
-              </div> 
+              </div>  */}
             </Grid>
         </Grid>
       </Grid>
