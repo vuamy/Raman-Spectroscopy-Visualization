@@ -396,6 +396,8 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
             });
 
         // Add buttons for zooming in and out
+        const buttonColor = "#1F2933"
+
         const zoomButtonsGroup = svg.append("g")
             .attr("class", "zoom-buttons")
             .attr("transform", `translate(0, ${-margin.top + 20})`)
@@ -404,7 +406,7 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
         const zoomInButton = zoomButtonsGroup.append("rect")
             .attr("width", 20)
             .attr("height", 20)
-            .attr("fill", "#6d1d81")
+            .attr("fill", buttonColor)
             .attr("rx", 5)
         
         const zoomInText = zoomButtonsGroup.append("text")
@@ -420,7 +422,7 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
             .attr("x", 30)
             .attr("width", 20)
             .attr("height", 20)
-            .attr("fill", "#6d1d81")
+            .attr("fill", buttonColor)
             .attr("rx", 5)
         
         const zoomOutText = zoomButtonsGroup.append("text")
@@ -436,7 +438,7 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
             .attr("x", 60)
             .attr("width", 50)
             .attr("height", 20)
-            .attr("fill", "#6d1d81")
+            .attr("fill", buttonColor)
             .attr("rx", 5)
         
         const resetText = zoomButtonsGroup.append("text")

@@ -19,8 +19,7 @@ export default function Navbar() {
         <Paper>
             <div className='navbar-container'>
                 <div className='navitem-container'>
-                    <FontAwesomeIcon icon={faDisease} style={{ height: '25px', width: '25px' }}/>
-                    <h3 >Raman Spectroscopy Visualization Dashboard</h3>
+                    <h3 className='navbar-title'>Raman Spectroscopy Visualization Dashboard</h3>
                 </div>
                 <Tooltip title="Help" style={{ height: '100%' }}>
                     <IconButton onClick={handleOpen}>

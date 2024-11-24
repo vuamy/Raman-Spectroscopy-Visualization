@@ -10,7 +10,7 @@
 }
 
 body {
-  background-color: #121212;
+  background-color: #1C1C1E;
   color: white;
   margin: 0;
   padding: 0;
@@ -32,12 +32,18 @@ body {
   padding-right: 2rem;
   justify-content: space-between;
   align-items: center;
+  height: 40px;
 }
 
 .navitem-container {
   display: flex;
   align-items: center;
   column-gap: 10px;
+}
+
+.navbar-title {
+  font-size: 16px;
+  font-weight: 5;
 }
 
 .footer-container {
