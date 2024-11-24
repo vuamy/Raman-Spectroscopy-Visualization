@@ -15,18 +15,18 @@ def convert_spectra_to_csv(input_folder, output_file):
                 filepath = os.path.join(input_folder, filename)
                 
                 file_id = os.path.splitext(filename)[0]
+                if (file_id == "309_1_01"): # Temporarily reduce data
+                    # Separate into variables
+                    with open(filepath, 'r') as file:
 
-                # Separate into variables
-                with open(filepath, 'r') as file:
+                        # Skip header
+                        file.readline()
 
-                    # Skip header
-                    file.readline()
-
-                    # Write to file
-                    for line in file:
-                        wavelength, intensity = line.split(',')
-                        intensity = intensity.strip().strip('"') # Remove quotations that randomly appear
-                        writer.writerow([file_id, wavelength.strip(), intensity])
+                        # Write to file
+                        for line in file:
+                            wavelength, intensity = line.split(',')
+                            intensity = intensity.strip().strip('"') # Remove quotations that randomly appear
+                            writer.writerow([file_id, wavelength.strip(), intensity])
 
     print(f"CSV file created at {output_file}")
 
