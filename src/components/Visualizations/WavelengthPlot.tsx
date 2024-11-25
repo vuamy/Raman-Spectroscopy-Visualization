@@ -86,7 +86,7 @@ export default function WavelengthPlot({theme}) {
                     "translate(" + margin.left + "," + margin.top + ")");
 
         // Initialize color scale
-        const color = d3.scaleOrdinal(["#221150","#400f74","#6d1d81","#701f81","#932b80","#a02f7f","#b2357b","#d8456c","#e04c67"]);
+        const color = d3.scaleOrdinal(["#4A90E2", "#6C63FF", "#7B2CBF", "#9B5DE5", "#C084FC", "#FF89BB", "#FF5D8F", "#FF2E63", "#D72638", "#851DE0"] );
 
         // Calculate min and max for x and y
         const xMin = d3.min(wavelengthData, d => d3.min(d.series, p => p.wavelength)) || 0;
