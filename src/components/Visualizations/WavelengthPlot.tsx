@@ -5,12 +5,14 @@ import { sliderBottom } from 'd3-simple-slider';
 import { isEmpty } from 'lodash';
 import { useResizeObserver, useDebounceCallback } from 'usehooks-ts';
 import { ComponentSize, Margin } from '../../types';
-import styles from 'Wavelength.css'
+import { processCSVData } from '../../api/handleSpectrumData.tsx'
 
 // Constructing interfaces and types
 
 interface Wavelength {
     id: string | number;
+    line: string | number;
+    ring: string | number;
     series: {
         wavelength: number;
         intensity: number;
@@ -35,33 +37,17 @@ export default function WavelengthPlot({theme}) {
         }
     }, [theme]);
 
-    // Read from CSV file
     useEffect(() => {
-        const dataFromCSV = async () => {
-          try {
-            const csvData = await d3.csv('../../data/combined_spectra_data.csv', d => ({
-                id: d.Id,
-                wavelength: +d.Wavelength,
-                intensity: +d.Intensity,
-            }));
-
-            // Group wavelengths per patient
-            const groupedData = d3.group(csvData, d => d.id);
-            const processedData = Array.from(groupedData, ([id, values]) => ({
-                id,
-                series: values.map(v => ({ wavelength: v.wavelength, intensity: v.intensity })),
-            }));
-
-            setWavelength(processedData);
-
-          } catch (error) {
-            console.error('Error loading CSV:', error);
-          }
-        } 
-        dataFromCSV();
-    }, [])
-
-    console.log(wavelengthData)
+        // Call the data processing function
+            const loadData = async () => {
+            const processedData = await processCSVData('../../data/combined_spectra_data.csv');
+            const sampleSize = 25;
+            const subset = processedData.slice(0, sampleSize);
+            setWavelength(subset); // Update with only subset of data
+        };
+    
+        loadData();
+      }, []);
 
     // Refreshing page
     useEffect(() => {

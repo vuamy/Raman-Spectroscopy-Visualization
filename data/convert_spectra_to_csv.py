@@ -7,7 +7,7 @@ def convert_spectra_to_csv(input_folder, output_file):
         writer = csv.writer(file)
 
         # Write header
-        writer.writerow(['Id', 'Wavelength', 'Intensity'])
+        writer.writerow(['Id', 'Wavelength', 'Intensity', 'Line', 'Ring'])
 
         # Read each file in the input folder
         for filename in os.listdir(input_folder):
@@ -15,10 +15,11 @@ def convert_spectra_to_csv(input_folder, output_file):
                 filepath = os.path.join(input_folder, filename)
                 
                 file_id = os.path.splitext(filename)[0]
-                if (file_id == "309_1_01" or file_id == "309_1_02" or file_id == "309_1_03"): # Temporarily reduce data
-                    # Separate into variables
-                    with open(filepath, 'r') as file:
+                file_id = file_id.split("_") # Temporarily reduce data
 
+                if file_id[0] == "309": # Only get first patient for now
+                # Separate into variables
+                    with open(filepath, 'r') as file:
                         # Skip header
                         file.readline()
 
@@ -26,7 +27,7 @@ def convert_spectra_to_csv(input_folder, output_file):
                         for line in file:
                             wavelength, intensity = line.split(',')
                             intensity = intensity.strip().strip('"') # Remove quotations that randomly appear
-                            writer.writerow([file_id, wavelength.strip(), intensity])
+                            writer.writerow([file_id[0], wavelength.strip(), intensity, file_id[1], file_id[2]])
 
     print(f"CSV file created at {output_file}")
 
