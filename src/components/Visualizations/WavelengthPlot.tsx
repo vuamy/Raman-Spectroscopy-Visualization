@@ -128,7 +128,7 @@ export default function WavelengthPlot({theme}) {
             .attr("id", "clip")
             .append("rect")
             .attr("x", 0)
-            .attr("y", margin.top)
+            .attr("y", 0)
             .attr("width", width)
             .attr("height", height);
 
@@ -204,6 +204,96 @@ export default function WavelengthPlot({theme}) {
             .attr('transform', `translate(${width/2 - margin.right},${0})`)
             .attr('fill', 'white')
             .attr('font-weight', 'bold')
+
+        // Create tooltip for hovering over plot that shows coordinates
+        const tooltip = d3.select("body")
+            .append("div")
+            .attr("id", "tooltip")
+            .style("position", "absolute")
+            .style("background", "rgba(0, 0, 0, 0.5)")
+            .style("color", "white")
+            .style("padding", "5px")
+            .style("border-radius", "3px")
+            .style("font-size", "10px")
+            .style("display", "none");
+
+        const hoverGroup = svg.append("g").attr("class", "hover-group");
+
+        // Vertical and horizontal lines connecting to axis
+        const verticalLine = hoverGroup.append("line")
+            .attr("stroke", "lightgray")
+            .style("opacity", 0);
+
+        const horizontalLine = hoverGroup.append("line")
+            .attr("stroke", "lightgray")
+            .style("opacity", 0);
+
+        // Control mouse events with overlay
+        svg.append("rect")
+            .attr("class", "hover-rect")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", width)
+            .attr("height", height)
+            .attr("fill", "none")
+            .attr("pointer-events", "all")
+            .on("mouseover", () => {
+                tooltip.style("display", "block");
+                verticalLine.style("opacity", 0.2);
+                horizontalLine.style("opacity", 0.2);
+            })
+            .on("mousemove", (event) => {
+                const [mouseX, mouseY] = d3.pointer(event);
+
+                // Change values depending on mouse location
+                const xValue = xScale.invert(mouseX);
+                const yValue = yScale.invert(mouseY);
+
+                // Find the closest data point across all series
+                let closestPoint = { wavelength: Infinity, intensity: Infinity, id: null };
+                let minDistance = Infinity;
+
+                wavelengthData.forEach((d: Wavelength) => {
+                    d.series.forEach(point => {
+                        const distance = Math.sqrt(
+                            Math.pow(point.wavelength - xValue, 2) +
+                            Math.pow(point.intensity - yValue, 2)
+                        );
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            closestPoint = { ...point, id: d.id };
+                        }
+                    });
+                });
+
+                // Update tooltip
+                tooltip
+                    .style("display", "block")
+                    .style("left", `${event.pageX + 10}px`)
+                    .style("top", `${event.pageY - 10}px`)
+                    .html(`
+                        Wavelength: ${closestPoint.wavelength.toFixed(0)}<br>
+                        Intensity: ${closestPoint.intensity.toFixed(0)}
+                    `);
+
+                // Update vertical and horizontal lines
+                verticalLine
+                    .attr("x1", mouseX)
+                    .attr("x2", mouseX)
+                    .attr("y1", 0)
+                    .attr("y2", height);
+
+                horizontalLine
+                    .attr("x1", 0)
+                    .attr("x2", width)
+                    .attr("y1", mouseY)
+                    .attr("y2", mouseY);
+            })
+            .on("mouseout", () => {
+                tooltip.style("display", "none");
+                verticalLine.style("opacity", 0);
+                horizontalLine.style("opacity", 0);
+            });
     }
 
     return (
