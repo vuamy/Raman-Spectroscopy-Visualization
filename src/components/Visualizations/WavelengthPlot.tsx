@@ -246,8 +246,8 @@ export default function WavelengthPlot({theme}) {
                 const [mouseX, mouseY] = d3.pointer(event);
 
                 // Change values depending on mouse location
-                const xValue = xScale.invert(mouseX);
-                const yValue = yScale.invert(mouseY);
+                const xValue = xScale.invert(mouseX - margin.left);
+                const yValue = yScale.invert(mouseY - margin.top);
 
                 // Find the closest data point across all series
                 let closestPoint = { wavelength: Infinity, intensity: Infinity, id: null };
