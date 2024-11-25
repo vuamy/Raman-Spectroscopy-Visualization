@@ -30,6 +30,7 @@ body {
   display: flex;
   padding-left: 2rem;
   padding-right: 2rem;
+  margin-bottom: 1rem;
   justify-content: space-between;
   align-items: center;
   height: 40px;
@@ -49,6 +50,7 @@ body {
 .footer-container {
   display: flex;
   padding: 1rem 2rem;
+  margin-top: 3rem;
   align-items: center;
   justify-content: space-between;
 }

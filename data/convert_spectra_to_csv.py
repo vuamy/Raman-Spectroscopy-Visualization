@@ -15,7 +15,7 @@ def convert_spectra_to_csv(input_folder, output_file):
                 filepath = os.path.join(input_folder, filename)
                 
                 file_id = os.path.splitext(filename)[0]
-                if (file_id == "309_1_01"): # Temporarily reduce data
+                if (file_id == "309_1_01" or file_id == "309_1_02" or file_id == "309_1_03"): # Temporarily reduce data
                     # Separate into variables
                     with open(filepath, 'r') as file:
 

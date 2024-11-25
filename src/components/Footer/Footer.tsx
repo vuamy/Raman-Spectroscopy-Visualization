@@ -18,7 +18,7 @@ export default function Footer() {
             <div className='footer-container'>
                 <div className='footer-item'>
                     <div className='text-with-icon'>
-                        <img src='../../../public/img/ucdavislogo.png' alt="uc davis logo" style={{ width: '70px'}}></img>
+                        <img src='/img/ucdavislogo.png' alt="uc davis logo" style={{ width: '70px'}}></img>
                         <h3 style={{ margin: 0}}>University of California, Davis</h3>
                     </div>
                 </div>

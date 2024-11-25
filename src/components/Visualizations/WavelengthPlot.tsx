@@ -1,9 +1,11 @@
 import React from 'react'
 import { useEffect, useState, useRef } from 'react';
 import * as d3 from 'd3';
+import { sliderBottom } from 'd3-simple-slider';
 import { isEmpty } from 'lodash';
 import { useResizeObserver, useDebounceCallback } from 'usehooks-ts';
 import { ComponentSize, Margin } from '../../types';
+import styles from 'Wavelength.css'
 
 // Constructing interfaces and types
 
@@ -21,7 +23,7 @@ export default function WavelengthPlot({theme}) {
     const [wavelengthData, setWavelength] = useState<Wavelength[]>([]);
     const wavelengthRef = useRef<HTMLDivElement>(null);
     const [size, setSize] = useState<ComponentSize>({ width: 0, height: 0 });
-    const margin: Margin = { top: 50, right: 100, bottom: 100, left: 100 };
+    const margin: Margin = { top: 20, right: 50, bottom: 100, left: 100 };
     const onResize = useDebounceCallback((size: ComponentSize) => setSize(size), 200)
 
     useResizeObserver({ ref: wavelengthRef, onResize });
@@ -120,11 +122,25 @@ export default function WavelengthPlot({theme}) {
             .attr('class', 'y-axis')
             .attr('stroke', 'white')
 
+        // Prevent wavelength lines from going outside bounds when slider range changes
+        svg.append("defs")
+            .append("clipPath")
+            .attr("id", "clip")
+            .append("rect")
+            .attr("x", 0)
+            .attr("y", margin.top)
+            .attr("width", width)
+            .attr("height", height);
+
+        const wavelengthGroup = svg.append("g")
+            .attr("class", "wavelength-group")
+            .attr("clip-path", "url(#clip)");
+
         // Add wavelength lines for each patient
-        const wavelengthLines = svg.selectAll('.line')
+        wavelengthGroup.selectAll('.wavelength-line')
             .data(wavelengthData)
             .join('path')
-            .attr('class', 'line')
+            .attr('class', 'wavelength-line')
             .attr('d', d => lineGenerator(d.series)!)
             .attr('fill', 'none')
             .attr('stroke', (d, i) => color.range()[i % 9])
@@ -134,16 +150,60 @@ export default function WavelengthPlot({theme}) {
         const xAxisTitle = svg.append("g")
             .append("text")
             .text("Wavelength (nm)")
-            .attr('transform', `translate(${(width - margin.left) / 2}, ${height + margin.top})`)
+            .attr('transform', `translate(${(-20)}, ${height + margin.bottom/2 - 10})`)
             .style('font-size', '.8rem')
             .style("fill", theme.palette.text.primary);
 
         const yAxisTitle = svg.append("g")
             .append("text")
             .text("Intensity")
-            .attr('transform', `translate(${-margin.left / 2}, ${(height + margin.top) / 2}) rotate(-90)`)
+            .attr('transform', `translate(${-margin.left / 2 + 5}, ${(height + margin.top) / 2}) rotate(-90)`)
             .style('font-size', '.8rem')
             .style("fill", theme.palette.text.primary);
+
+        // Define wavelength slider
+        const sliderScale = d3.scaleLinear()
+            .domain([xMin, xMax])
+            .range([margin.left, width-margin.right])
+            
+        const slider = sliderBottom(sliderScale)
+            .ticks(10)
+            .default([xMin, xMax])
+            .fill("#C084FC")
+            .handle(d3.symbol().type(d3.symbolCircle).size(200)())
+            .on('onchange', ([min, max]: [number, number]) => {
+                xScale.domain([min, max]);
+                svg.select('.x-axis').call(d3.axisBottom(xScale));
+                wavelengthGroup.selectAll('.wavelength-line')
+                    .attr('d', d => lineGenerator(d.series)!);
+            })
+
+        // Add to slider container
+        const sliderContainer = svg.append("g")
+            .attr("class", "slider")
+            .attr('width', 400)
+            .attr('height', 100)
+            .append('g')
+            .attr('transform', `translate(0,${height + margin.bottom - 65})`)
+            .call(slider);
+
+        // Change visual display of slider
+        svg.selectAll('.slider .tick text')
+            .style('font-size', '10px')
+            .style('fill', 'white')
+            .style('y', '-20px')
+        
+        svg.selectAll('.parameter-value text')
+            .style('font-size', '12px')
+            .style('fill', "#C084FC")
+
+        // Add plot title
+        const plotTitle = svg.append("g")
+            .append("text")
+            .text("Wavelength Series")
+            .attr('transform', `translate(${width/2 - margin.right},${0})`)
+            .attr('fill', 'white')
+            .attr('font-weight', 'bold')
     }
 
     return (
