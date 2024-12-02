@@ -5,14 +5,13 @@ import { sliderBottom } from 'd3-simple-slider';
 import { isEmpty } from 'lodash';
 import { useResizeObserver, useDebounceCallback } from 'usehooks-ts';
 import { ComponentSize, Margin } from '../../types';
-import { processCSVData } from '../../api/handleSpectrumData.tsx'
+import { processCSVData } from '../../api/handleSpectrumData.tsx';
+import simplify from 'simplify-js'
 
 // Constructing interfaces and types
 
 interface Wavelength {
     id: string | number;
-    line: string | number;
-    ring: string | number;
     series: {
         wavelength: number;
         intensity: number;
@@ -36,15 +35,31 @@ export default function WavelengthPlot({theme}) {
         wavelengthRef.current.style.backgroundColor = theme.palette.background.default;
         }
     }, [theme]);
-
+    
     useEffect(() => {
+        // Currently data is reduced by a lot
+        // Simplify data
+        const simplifyData = (data: Wavelength[], tolerance = 1.0) => {
+            return data.map(d => ({
+              ...d,
+              series: simplify(
+                d.series.map(p => ({ x: p.wavelength, y: p.intensity })),
+                tolerance
+              ).map(p => ({ wavelength: p.x, intensity: p.y })),
+            }));
+          };
+          
         // Call the data processing function
-            const loadData = async () => {
-            const processedData = await processCSVData('../../data/combined_spectra_data.csv');
-            const sampleSize = 25;
-            const subset = processedData.slice(0, sampleSize);
-            setWavelength(subset); // Update with only subset of data
-        };
+        const loadData = async () => {
+            try {
+              const processedData = await processCSVData('../../data/combined_spectra_data.csv');
+              const simplifiedData = simplifyData(processedData, 10.0);
+              console.log('Simplified Data:', simplifiedData);
+              setWavelength(simplifiedData);
+            } catch (error) {
+              console.error('Error in data loading and simplification:', error);
+            }
+          };
     
         loadData();
       }, []);
@@ -131,6 +146,8 @@ export default function WavelengthPlot({theme}) {
             .attr('fill', 'none')
             .attr('stroke', (d, i) => color.range()[i % 9])
             .attr('stroke-width', 1.5);
+
+        console.log(wavelengthData)
 
         // Add axis titles
         const xAxisTitle = svg.append("g")

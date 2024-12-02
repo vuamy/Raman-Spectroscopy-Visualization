@@ -4,7 +4,7 @@ import * as d3 from 'd3';
 export const processCSVData = async (filePath: string) => {
   try {
     const csvData = await d3.csv(filePath, d => ({
-      id: (d.Id + d.Line + d.Ring),
+      id: (d.Id + String(d.Line)),
       patient: d.Id,
       wavelength: +d.Wavelength,
       intensity: +d.Intensity,
@@ -14,7 +14,6 @@ export const processCSVData = async (filePath: string) => {
 
     // Group wavelengths per patient
     const groupedData = d3.group(csvData, d => d.id);
-    console.log(groupedData)
     const processedData = Array.from(groupedData, ([id, values], index) => ({
       id,
       line: values[index].line,

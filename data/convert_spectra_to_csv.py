@@ -16,18 +16,26 @@ def convert_spectra_to_csv(input_folder, output_file):
                 
                 file_id = os.path.splitext(filename)[0]
                 file_id = file_id.split("_") # Temporarily reduce data
-
-                if file_id[0] == "309": # Only get first patient for now
-                # Separate into variables
-                    with open(filepath, 'r') as file:
-                        # Skip header
-                        file.readline()
-
-                        # Write to file
-                        for line in file:
-                            wavelength, intensity = line.split(',')
-                            intensity = intensity.strip().strip('"') # Remove quotations that randomly appear
-                            writer.writerow([file_id[0], wavelength.strip(), intensity, file_id[1], file_id[2]])
+                    # Separate into variables
+                with open(filepath, 'r') as file:
+                            # Skip header
+                            file.readline()
+                            # Create variables to keep track for data aggregation
+                            curWavelength = 793
+                            count = 0
+                            intensitySum = 0
+                            # Write to file
+                            for line in file:
+                                wavelength, intensity = line.split(',')
+                                intensity = intensity.strip().strip('"') # Remove quotations that randomly appear
+                                if float(wavelength) < curWavelength:
+                                    intensitySum += float(intensity)
+                                    count += 1
+                                else:
+                                    writer.writerow([file_id[0], curWavelength, (intensitySum / count), file_id[1], file_id[2]])
+                                    curWavelength += 1
+                                    intensitySum = 0
+                                    count = 0
 
     print(f"CSV file created at {output_file}")
 
