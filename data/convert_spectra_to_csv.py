@@ -17,25 +17,16 @@ def convert_spectra_to_csv(input_folder, output_file):
                 file_id = os.path.splitext(filename)[0]
                 file_id = file_id.split("_") # Temporarily reduce data
                     # Separate into variables
+                if int(file_id[2]) > 10 and int(file_id[2]) < 40:
+                    continue
                 with open(filepath, 'r') as file:
                             # Skip header
                             file.readline()
-                            # Create variables to keep track for data aggregation
-                            curWavelength = 793
-                            count = 0
-                            intensitySum = 0
                             # Write to file
                             for line in file:
                                 wavelength, intensity = line.split(',')
                                 intensity = intensity.strip().strip('"') # Remove quotations that randomly appear
-                                if float(wavelength) < curWavelength:
-                                    intensitySum += float(intensity)
-                                    count += 1
-                                else:
-                                    writer.writerow([file_id[0], curWavelength, (intensitySum / count), file_id[1], file_id[2]])
-                                    curWavelength += 1
-                                    intensitySum = 0
-                                    count = 0
+                                writer.writerow([file_id[0], wavelength.strip(), intensity, int(file_id[1]), int(file_id[2])])
 
     print(f"CSV file created at {output_file}")
 

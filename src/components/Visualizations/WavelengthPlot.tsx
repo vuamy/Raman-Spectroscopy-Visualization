@@ -53,9 +53,8 @@ export default function WavelengthPlot({theme}) {
         const loadData = async () => {
             try {
               const processedData = await processCSVData('../../data/combined_spectra_data.csv');
-              const simplifiedData = simplifyData(processedData, 10.0);
-              console.log('Simplified Data:', simplifiedData);
-              setWavelength(simplifiedData);
+              setWavelength(processedData);
+              console.log(processedData)
             } catch (error) {
               console.error('Error in data loading and simplification:', error);
             }
