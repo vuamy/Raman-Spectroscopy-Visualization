@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import SankeyPlot from './components/Visualizations/SankeyPlot'
 import WavelengthPlot from './components/Visualizations/WavelengthPlot'
 import Heatmap from './components/Visualizations/Heatmap'
@@ -27,6 +28,13 @@ const theme = createTheme({
 
 function Layout() {
   const theme = useTheme();
+  const [selectedWavelength, setSelectedWavelength] = useState<number | null>(null);
+
+  const handleWavelengthSelect = (wavelength: number | null) => {
+    setSelectedWavelength(wavelength);
+    console.log("Wavelength selected in parent:", wavelength); 
+  };
+
   return (
     <div>
       <Navbar />
@@ -41,12 +49,12 @@ function Layout() {
         <Grid container item direction='row' xs={6} sm={6} md={6} lg={6} sx={{ height: '100%' }}>
           <Grid item xs={8} className="plot" sx={{ height: '100%' }}>
               <div style={{ width: '100%', height: '100%'}}> 
-                <WavelengthPlot theme={theme} />
+                <WavelengthPlot theme={theme} onWavelengthSelect={handleWavelengthSelect}/>
               </div> 
           </Grid>
           <Grid item xs={4} className="plot" sx={{ height: '100%' }}>
               <div style={{ width: '100%', height: '100%'}}> 
-                <Heatmap theme={theme} />
+                <Heatmap theme={theme} selectedWavelength={selectedWavelength}/>
               </div> 
           </Grid>
         </Grid>

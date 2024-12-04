@@ -18,14 +18,20 @@ interface Wavelength {
     }[];
 }
 
-export default function WavelengthPlot({theme}) {
+interface WavelengthProps {
+    onWavelengthSelect?: (color: number | null) => void;
+    theme: any;
+}
+
+export default function WavelengthPlot({theme, onWavelengthSelect}:  WavelengthProps) {
     
     // Initialize use states
     const [wavelengthData, setWavelength] = useState<Wavelength[]>([]);
     const wavelengthRef = useRef<HTMLDivElement>(null);
     const [size, setSize] = useState<ComponentSize>({ width: 0, height: 0 });
-    const margin: Margin = { top: 20, right: 50, bottom: 100, left: 100 };
+    const margin: Margin = { top: 20, right: 20, bottom: 100, left: 100 };
     const onResize = useDebounceCallback((size: ComponentSize) => setSize(size), 200)
+    const [selectedWavelength, setSelectedWavelength] = useState<number | null>(null);
 
     useResizeObserver({ ref: wavelengthRef, onResize });
     
@@ -52,11 +58,12 @@ export default function WavelengthPlot({theme}) {
         // Call the data processing function
         const loadData = async () => {
             try {
-              const processedData = await processCSVData('../../data/combined_spectra_data.csv');
-              setWavelength(processedData);
-              console.log(processedData)
+                const processedData = await processCSVData('../../data/combined_spectra_data.csv');
+                const sampleSize = 10;
+                const subset = processedData.slice(0, sampleSize);
+                setWavelength(subset);
             } catch (error) {
-              console.error('Error in data loading and simplification:', error);
+                console.error('Error in data loading and simplification:', error);
             }
           };
     
@@ -67,9 +74,10 @@ export default function WavelengthPlot({theme}) {
     useEffect(() => {
         if (isEmpty(wavelengthData)) return;
         if (size.width === 0 || size.height === 0) return;
-        d3.select('#wavelength-svg').selectAll('*').remove();
+        const svg = d3.select('#wavelength-svg')
+        svg.selectAll("*").remove();
         initWavelength();
-    }, [wavelengthData, size])
+    }, [wavelengthData, size, selectedWavelength])
 
     // Initialize wavelength series plot
     function initWavelength() {
@@ -146,8 +154,6 @@ export default function WavelengthPlot({theme}) {
             .attr('stroke', (d, i) => color.range()[i % 9])
             .attr('stroke-width', 1.5);
 
-        console.log(wavelengthData)
-
         // Add axis titles
         const xAxisTitle = svg.append("g")
             .append("text")
@@ -176,8 +182,12 @@ export default function WavelengthPlot({theme}) {
             .on('onchange', ([min, max]: [number, number]) => {
                 xScale.domain([min, max]);
                 svg.select('.x-axis').call(d3.axisBottom(xScale));
+                
+                // Update the lines without redrawing the whole plot
                 wavelengthGroup.selectAll('.wavelength-line')
-                    .attr('d', d => lineGenerator(d.series)!);
+                    .transition()
+                    .duration(500)
+                    .attr('d', d => lineGenerator(d.series));  // Smooth transition
             })
 
         // Add to slider container
@@ -230,7 +240,17 @@ export default function WavelengthPlot({theme}) {
             .attr("stroke", "lightgray")
             .style("opacity", 0);
 
-        // Control mouse events with overlay
+        const selectWavelength = svg.append("line")
+            .attr("stroke", "lightblue")
+            .attr("stroke-width", 3)
+            .style("opacity", 0);
+        
+        const wavelengthText = svg.append("g")
+            .append("text")
+            .style('font-size', "12px")
+            .style('fill', "lightblue")
+
+        // Control mouse events with overlay    
         svg.append("rect")
             .attr("class", "hover-rect")
             .attr("x", 0)
@@ -247,26 +267,9 @@ export default function WavelengthPlot({theme}) {
             .on("mousemove", (event) => {
                 const [mouseX, mouseY] = d3.pointer(event);
 
-                // Change values depending on mouse location
-                const xValue = xScale.invert(mouseX - margin.left);
-                const yValue = yScale.invert(mouseY - margin.top);
-
-                // Find the closest data point across all series
-                let closestPoint = { wavelength: Infinity, intensity: Infinity, id: null };
-                let minDistance = Infinity;
-
-                wavelengthData.forEach((d: Wavelength) => {
-                    d.series.forEach(point => {
-                        const distance = Math.sqrt(
-                            Math.pow(point.wavelength - xValue, 2) +
-                            Math.pow(point.intensity - yValue, 2)
-                        );
-                        if (distance < minDistance) {
-                            minDistance = distance;
-                            closestPoint = { ...point, id: d.id };
-                        }
-                    });
-                });
+                // Change values depending on mouse locat)ion
+                const xValue = xScale.invert(mouseX);
+                const yValue = yScale.invert(mouseY);
 
                 // Update tooltip
                 tooltip
@@ -274,8 +277,8 @@ export default function WavelengthPlot({theme}) {
                     .style("left", `${event.pageX + 10}px`)
                     .style("top", `${event.pageY - 10}px`)
                     .html(`
-                        Wavelength: ${closestPoint.wavelength.toFixed(0)}<br>
-                        Intensity: ${closestPoint.intensity.toFixed(0)}
+                        Wavelength: ${xValue.toFixed(0)}<br>
+                        Intensity: ${yValue.toFixed(0)}
                     `);
 
                 // Update vertical and horizontal lines
@@ -295,7 +298,29 @@ export default function WavelengthPlot({theme}) {
                 tooltip.style("display", "none");
                 verticalLine.style("opacity", 0);
                 horizontalLine.style("opacity", 0);
-            });
+            })
+            .on("click", (event) => {
+                const [mouseX] = d3.pointer(event);
+                const xValue = xScale.invert(mouseX);
+                selectWavelength.style("opacity", 0.5);
+                selectWavelength
+                    .attr("x1", mouseX)
+                    .attr("x2", mouseX)
+                    .attr("y1", 0)
+                    .attr("y2", height)
+                wavelengthText
+                    .text(xValue.toFixed(0))
+                    .attr('x', mouseX - 10)
+                    .attr('y', -10)
+
+                tooltip.style("display", "none");
+
+                if (onWavelengthSelect) {
+                    onWavelengthSelect(xValue);
+                }
+                setSelectedWavelength(xValue);
+            })
+
     }
 
     return (

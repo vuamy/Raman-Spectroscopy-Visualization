@@ -16,9 +16,6 @@ def convert_spectra_to_csv(input_folder, output_file):
                 
                 file_id = os.path.splitext(filename)[0]
                 file_id = file_id.split("_") # Temporarily reduce data
-                    # Separate into variables
-                if int(file_id[2]) > 10 and int(file_id[2]) < 41:
-                    continue
                 with open(filepath, 'r') as file:
                             # Skip header
                             file.readline()

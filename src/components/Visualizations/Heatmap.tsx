@@ -18,13 +18,13 @@ interface Wavelength {
     }[];
 }
 
-export default function Heatmap({ theme }) {
+export default function Heatmap({ theme, selectedWavelength }) {
     
     // Initialize use states
     const [heatmapData, setHeatmap] = useState<Wavelength[]>([]);
     const heatmapRef = useRef<HTMLDivElement>(null);
     const [size, setSize] = useState<ComponentSize>({ width: 0, height: 0 });
-    const margin: Margin = { top: 50, right: 50, bottom: 50, left: 50 };
+    const margin: Margin = { top: 50, right: 20, bottom: 50, left: 20 };
     const onResize = useDebounceCallback((size: ComponentSize) => setSize(size), 200)
 
     useResizeObserver({ ref: heatmapRef, onResize });
@@ -41,9 +41,9 @@ export default function Heatmap({ theme }) {
         // Call the data processing function
             const loadData = async () => {
             const processedData = await processCSVData('../../data/combined_spectra_data.csv');
-            const sampleSize = 50;
-            const subset = processedData.slice(0, sampleSize);
             setHeatmap(processedData); // Update with only subset of data
+
+            console.log(processedData)
         };
     
         loadData();
@@ -56,6 +56,8 @@ export default function Heatmap({ theme }) {
         d3.select('#heatmap-svg').selectAll('*').remove();
         initHeatmap();
     }, [heatmapData, size])
+
+    console.log(selectedWavelength)
 
     // Initialize heatmap
     function initHeatmap() {
@@ -73,65 +75,115 @@ export default function Heatmap({ theme }) {
             .attr("width", size.width)
             .attr("height", size.height)
             .append("g")
-                .attr("transform", "translate(" + (width/2 + 40) + "," + (height/2 + 40) + ")");
-
-        // Initialize color scale
-        const min = d3.min(heatmapData, d => d3.min(d.series, p => p.intensity)) || 0;
-        const max = d3.max(heatmapData, d => d3.max(d.series, p => p.intensity)) || 0;
-        const colorScale = d3.scaleSequential<String>()
-            .domain([min, max])
-            .range(["white", "#7B2CBF"])
-        
-        // Create line angle scale
-        const angleScale = d3.scaleLinear()
-            .domain([1, 4])
-            .range([0, 2 * Math.PI]);
-        
-        // Create ring radial scale
-        const radialScale = d3.scaleLinear()
-            .domain([1, 25]) // Symmetry for same ring
-            .range([0, radius]);
-
-        // Function to consider that opposite rings are the same
-        const normalizedRing = ring => Math.min(ring, 51 - ring);
+                .attr("transform", "translate(" + (width/2 - 60) + "," + (height/2 + 60) + ")");
 
         // Function to find matching intesity for some wavelength
-        const filterDataByWavelength = (data: Wavelength[], targetWavelength: number) => {
+        const filterDataByWavelength = (data: Wavelength[], targetWavelength: number, targetPatient: string) => {
             return data.map(d => {
-              const matchingEntry = d.series.find(s => s.wavelength === targetWavelength);
+              const matchingEntry = d.series.find(s => s.wavelength < targetWavelength && s.wavelength + 0.119 > targetWavelength);
               return matchingEntry
-                ? {
+                ? ((Number(d.ring) <= 25) ? {
+                    patient: targetPatient,
                     line: Number(d.line), 
                     ring: Number(d.ring),
                     intensity: matchingEntry.intensity
-                  }
-                : null; // Exclude entries without matching wavelengths
+                  } : {
+                    patient: targetPatient,
+                    line: 4 + Number(d.line), 
+                    ring: 51 - Number(d.ring),
+                    intensity: matchingEntry.intensity}
+                ) : null; // Exclude entries without matching wavelengths
             }).filter(d => d !== null);
           };
 
         // Grab necessary data
-        const filteredData = filterDataByWavelength(heatmapData, 793.398);
-        svg.selectAll("path")
-          .data(filteredData) // Use the flattened data array
-          .join("path")
-          .attr("d", d => {
-            const startAngle = angleScale(d.line);
-            const endAngle = angleScale(d.line + 1); // Adjust for discrete segments
-            const innerRadius = radialScale(normalizedRing(d.ring));
-            const outerRadius = radialScale(normalizedRing(d.ring) + 1);
-        
-            const arc = d3.arc()
-              .innerRadius(innerRadius)
-              .outerRadius(outerRadius)
-              .startAngle(startAngle)
-              .endAngle(endAngle);
-        
-            return arc();
-          })
-          .attr("fill", d => colorScale(d.intensity))
-          .attr("stroke", "white")
-          .attr("stroke-width", 0.5);
+        const filteredData = filterDataByWavelength(heatmapData, selectedWavelength, '310');
 
+        // Initialize color scale
+        const min = d3.min(filteredData, d => d.intensity) || 0;
+        const max = d3.max(filteredData, d => d.intensity) || 0;
+        console.log(min, max)
+        const clippedMax = d3.quantile(filteredData.map(d => d.intensity).sort(d3.ascending), 0.95);
+
+        const colorScale = d3.scaleSequential(d3.interpolateBlues)
+            .domain([min, clippedMax]);
+        
+        // Create line angle scale
+        const angleScale = d3.scaleBand()
+            .domain([1, 2, 3, 4, 5, 6, 7, 8])
+            .range([0, 2 * Math.PI])
+            .padding(0);
+
+        // Create each individual segment
+        const segmentAngle = (2 * Math.PI) / 8;
+        
+        // Create ring radial scale
+        const radialScale = d3.scaleLinear()
+            .domain([1, 25])
+            .range([0, radius])
+
+            svg.selectAll("path")
+                .data(filteredData)
+                .join("path")
+                .attr("d", d => {
+                    const startAngle = (d.line - 1) * segmentAngle;;
+                    const endAngle = startAngle + segmentAngle;
+                    
+                    // Inner and outer radius
+                    const innerRadius = radialScale(d.ring);
+                    const outerRadius = radialScale(d.ring + 1);
+                    
+                    // Generate arc
+                    const arc = d3.arc()
+                        .innerRadius(innerRadius)
+                        .outerRadius(outerRadius)
+                        .startAngle(startAngle)
+                        .endAngle(endAngle);
+                    
+                    return arc();
+                })
+                .attr("fill", "none")
+                .attr("stroke", "gray")
+                .attr("stroke-width", 0.5)
+                .style("opacity", 0.1);
+
+            // Add label for each line
+            svg.selectAll(".line-label")
+                .data([1, 2, 3, 4, 5, 6, 7, 8]) // Assuming 4 lines
+                .join("text")
+                .attr("class", "line-label")
+                .attr("x", d => (radius + 15) * Math.cos(angleScale(d) - Math.PI / 2))
+                .attr("y", d => (radius + 15) * Math.sin(angleScale(d) - Math.PI / 2))
+                .attr("text-anchor", "middle")
+                .attr("font-size", 8)
+                .attr("fill", "white")
+                .text(d => `Line ${d}`);
+        
+            // Add circle data point for each measurement
+            svg.selectAll(".data-point")
+                .data(filteredData)
+                .join("circle")
+                .attr("class", "data-point")
+                .attr("cx", d => radialScale(d.ring) * Math.cos(angleScale(d.line) - Math.PI / 2))
+                .attr("cy", d => radialScale(d.ring) * Math.sin(angleScale(d.line) - Math.PI / 2))
+                .attr("r", 3)
+                .attr("fill", d => colorScale(d.intensity))
+
+            // Add plot title
+            const plotTitle = svg.append("g")
+                .append("text")
+                .text("Spatial Variance")
+                .attr("fill", "white")
+                .attr("font-weight", "bold")
+                .attr("y", -160)
+                .attr("x", -55)
+
+            const wavelengthDisplay = svg.append("g")
+                .append("text")
+                .text("Wavelength: " + (Number(selectedWavelength) > 0 ? selectedWavelength.toFixed(2) : 0))
+                .attr('fill', 'white')
+                .attr('y', -50)
+                .attr('x', width/2 - 60)
         }
 
     return (

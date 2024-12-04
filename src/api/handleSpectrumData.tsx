@@ -13,14 +13,12 @@ export const processCSVData = async (filePath: string) => {
     }));
     // Group wavelengths per patient
     const groupedData = d3.group(csvData, d => d.id);
-    console.log("Grouped Data:", groupedData)
     const processedData = Array.from(groupedData, ([id, values], index) => ({
       id,
       line: values[0].line,
       ring: values[0].ring,
       series: values.map(v => ({ wavelength: v.wavelength, intensity: v.intensity})),
     }));
-    console.log("Processed Data:", processedData)
 
     return processedData;
   } catch (error) {
