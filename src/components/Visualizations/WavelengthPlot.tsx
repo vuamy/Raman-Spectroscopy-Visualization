@@ -77,7 +77,7 @@ export default function WavelengthPlot({theme, onWavelengthSelect}:  WavelengthP
         const svg = d3.select('#wavelength-svg')
         svg.selectAll("*").remove();
         initWavelength();
-    }, [wavelengthData, size, selectedWavelength])
+    }, [wavelengthData, size])
 
     // Initialize wavelength series plot
     function initWavelength() {

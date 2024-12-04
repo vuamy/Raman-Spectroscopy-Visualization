@@ -18,7 +18,12 @@ interface Wavelength {
     }[];
 }
 
-export default function Heatmap({ theme, selectedWavelength }) {
+interface WavelengthProps {
+    selectedWavelength?: (color: number | null) => void;
+    theme: any;
+}
+
+export default function Heatmap({ theme, selectedWavelength }: WavelengthProps) {
     
     // Initialize use states
     const [heatmapData, setHeatmap] = useState<Wavelength[]>([]);
@@ -55,9 +60,7 @@ export default function Heatmap({ theme, selectedWavelength }) {
         if (size.width === 0 || size.height === 0) return;
         d3.select('#heatmap-svg').selectAll('*').remove();
         initHeatmap();
-    }, [heatmapData, size])
-
-    console.log(selectedWavelength)
+    }, [heatmapData, size, selectedWavelength])
 
     // Initialize heatmap
     function initHeatmap() {
@@ -102,7 +105,6 @@ export default function Heatmap({ theme, selectedWavelength }) {
         // Initialize color scale
         const min = d3.min(filteredData, d => d.intensity) || 0;
         const max = d3.max(filteredData, d => d.intensity) || 0;
-        console.log(min, max)
         const clippedMax = d3.quantile(filteredData.map(d => d.intensity).sort(d3.ascending), 0.95);
 
         const colorScale = d3.scaleSequential(d3.interpolateBlues)
