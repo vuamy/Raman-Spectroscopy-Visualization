@@ -81,14 +81,31 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
                     formattedBmi = "Overweight"
                 }
 
-                const formattedStage = d.Staging_Overall === "IVA/I" ? "IVA" : d.Staging_Overall
+                let formattedStage;
+                if (d.Staging_Overall.startsWith("IV") || d.Staging_Overall === "III") {
+                    formattedStage = "Late Stage";
+                } else if (d.Staging_Overall === "I" || d.Staging_Overall === "II") {
+                    formattedStage = "Early Stage";
+                } else {
+                    formattedStage = d.Staging_Overall;
+                }
+                formattedStage = formattedStage === "Nan" ? "Healthy" : formattedStage;
+
+                let formattedAge;
+                if (Number(d.Age) < 50) {
+                    formattedAge = "Below 50 (Low Risk)"
+                } else {
+                    formattedAge = "Above 50 (High Risk)"
+                }
+
+                let formattedRace = d.Race === "Unknown" || d.Race === "Other" ? "Unknown/Other" : d.Race;
 
                 // Return all values
                 return {
                     id: d.Patient_OD,
                     gender: formattedGender,
-                    age: Number(d.Age),
-                    race: d.Race,
+                    age: formattedAge,
+                    race: formattedRace,
                     ethnicity: formattedEthnicity,
                     bmi: formattedBmi,
                     stage: formattedStage
@@ -100,12 +117,10 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
             // Create nodes
             const uniqueCategories = new Set();
             csvData.forEach(d => {
-                uniqueCategories.add(d.gender);
-                uniqueCategories.add(d.race);
-                uniqueCategories.add(d.ethnicity);
-                uniqueCategories.add(d.bmi);
                 uniqueCategories.add(d.stage);
-            });
+                uniqueCategories.add(d.bmi); 
+                uniqueCategories.add(d.age);                
+            });//                uniqueCategories.add(d.gender); uniqueCategories.add(d.race);
             
             const nodes: SankeyNode[] = []
             
@@ -124,7 +139,7 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
 
             // Create links
             const links: SankeyLink[] = [];
-            const levels = ['stage', 'gender', 'ethnicity', 'race', 'bmi']; // Sankey flow from left to right
+            const levels = [ 'bmi', 'stage', 'age']; // Sankey flow from left to right, 'bmi', 'age', 'race', 'gender'
 
             for (let i = 0; i < levels.length - 1; i++) {
                 const currentLevel = levels[i];
@@ -264,7 +279,7 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
         const columnLabels = zoomableGroup.attr("class", "column-labels");
 
         // Create labels
-        const levels = ['Stage', 'Gender', 'Hispanic/Latino', 'Race', 'BMI'];
+        const levels = [ 'BMI', 'Stage', 'Age'];//, 'BMI', 'Age', 'Race', 'Gender'
         sortedColumns.forEach(([xPosition, nodes], index) => {
             columnLabels.append("text")
                 .attr("x", (xPosition || 0))
@@ -278,6 +293,54 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
         // Column label helper function
         function getColumnLabel(index: number) {
             return levels[index] || "Unknown";
+        }
+        // Create select menus for each column
+        sortedColumns.forEach(([xPosition, nodes], index) => {
+            const selectMenu = columnLabels.append("foreignObject")
+            .attr("x", (xPosition || 0) - 50)
+            .attr("y", -30)
+            .attr("width", 100)
+            .attr("height", 30)
+            .append("xhtml:div")
+            .append("select")
+            .style("width", "100px")
+            .style("height", "20px")
+            .on("change", function(event) {
+                const selectedAttribute = event.target.value;
+                updateSankeyColumn(index, selectedAttribute);
+            });
+
+            levels.forEach(level => {
+            selectMenu.append("option")
+                .attr("value", level)
+                .text(level)
+                .property("selected", level === levels[index]);
+            });
+        });
+
+        // Function to update the Sankey diagram when a new attribute is selected
+        function updateSankeyColumn(columnIndex, newAttribute) {
+            const newLevels = [...levels];
+            newLevels[columnIndex] = newAttribute;
+
+            const newLinks = [];
+            for (let i = 0; i < newLevels.length - 1; i++) {
+            const currentLevel = newLevels[i];
+            const nextLevel = newLevels[i + 1];
+            const flows = d3.rollups(
+                csvData,
+                v => v.length,
+                d => d[currentLevel],
+                d => d[nextLevel]
+            );
+            flows.forEach(([source, targets]) => {
+                targets.forEach(([target, value]) => {
+                newLinks.push({ source, target, value });
+                });
+            });
+            }
+
+            setSankey({ nodes: sankeyData.nodes, links: newLinks });
         }
 
         // Create plot label

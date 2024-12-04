@@ -20,7 +20,6 @@ Patient_OD,Gender,Race,Age,BMI,Ethnicity,Anatomic_Site,Diagnosis_per_OR_schedule
 292,Male Gender,White,51,20.1,Not Hispanic or Latino,"Head, face or neck, NOS",TONGUE CANCER,Malignant,pT4aN1M0,IVA,No,No,Nan,Squamous cell carcinoma,Oral cavity,No
 293,Male Gender,White,50,33.4,Not Hispanic or Latino,"Head, face or neck, NOS",OSA (OBSTRUCTIVE SLEEP APNEA),Non-Malignant,Nan,Nan,Nan,Nan,Nan,Nan,Nan,No
 294,Female Gender,Native Hawaiian or Other Pacific Islander,44,35.3,Not Hispanic or Latino,"Head, face or neck, NOS",HURTHLE CELL CARCINOMA,Non-Malignant,Nan,Nan,Nan,Nan,Nan,Benign thyroid (history of thyroid cancer),Thyroid,No
-295,Female Gender,White,71,25.8,Not Hispanic or Latino,"Head, face or neck, NOS",LEFT THYROID NODULE,Malignant,Thyroid cancer,Thyroid cancer,Nan,Nan,Nan,Papillary thyroid carcinoma,Thyroid,No
 296,Male Gender,White,66,30.4,Not Hispanic or Latino,"Head, face or neck, NOS","SQUAMOUS CELL CARCINOMA, LIP METS TO HEAD AND NECK LYMPH NODE",Malignant,pT0N2bM0,IVA,No,No,Prior surgery for head and neck cancer,Squamous cell carcinoma,Oral cavity,No
 297,Male Gender,White,77,18.8,Not Hispanic or Latino,"Head, face or neck, NOS",SQUAMOUS CELL CARCINOMA OF SKIN OF LEFT CHEEK,Malignant,pT2N0M0,II,No,No,Nan,Skin SCC,Cutaneous,No
 298,Male Gender,White,81,25.5,Not Hispanic or Latino,"Head, face or neck, NOS",SQUAMOS CELL CARCINOMA,Malignant,pT2N0M0,II,No,No,Nan,Skin SCC,Cutaneous,No
