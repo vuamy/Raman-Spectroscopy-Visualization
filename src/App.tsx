@@ -30,6 +30,7 @@ const theme = createTheme({
 function Layout() {
   const theme = useTheme();
   const [selectedWavelength, setSelectedWavelength] = useState<number | null>(null);
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
 
   const handleWavelengthSelect = (wavelength: number | null) => {
     setSelectedWavelength(wavelength);
@@ -48,7 +49,7 @@ function Layout() {
             </Grid>
             <Grid item xs={4} className="plot" sx={{ height: '100%' }}>
             <div style={{ width: '100%', height: '100%'}}> 
-              <ScatterPlot />
+              <ScatterPlot setSelectedPatientId={setSelectedPatientId} />
             </div>
         </Grid>
           </Grid>

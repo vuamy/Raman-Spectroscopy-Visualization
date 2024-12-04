@@ -69,3 +69,50 @@ body {
   margin: 0;
   padding: 0;
 }
+
+.toggle-switch input[type="checkbox"] {
+  appearance: none;
+  width: 40px;
+  height: 20px;
+  background: #ccc;
+  outline: none;
+  border-radius: 20px;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.toggle-switch input[type="checkbox"]:checked {
+  background: #4A90E2;
+}
+
+.toggle-switch input[type="checkbox"]::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  top: 1px;
+  left: 1px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.toggle-switch input[type="checkbox"]:checked::before {
+  transform: translateX(20px);
+}
+
+.toggle-switch {
+  display: flex;
+  align-items: center;
+  position: relative;
+  top: 60px;
+  left: 105px;
+  margin-bottom: 10px;
+}
+
+.toggle-switch label {
+  margin-right: 10px;
+  font-size: 14px;
+  color: white;
+}

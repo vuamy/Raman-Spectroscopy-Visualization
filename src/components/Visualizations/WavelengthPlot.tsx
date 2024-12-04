@@ -61,12 +61,13 @@ export default function WavelengthPlot({theme, onWavelengthSelect}:  WavelengthP
                 const processedData = await processCSVData('../../data/combined_spectra_data.csv');
                 const sampleSize = 10;
                 const subset = processedData.slice(0, sampleSize);
+                console.log("Wavelength data:", processedData);
                 setWavelength(subset);
             } catch (error) {
                 console.error('Error in data loading and simplification:', error);
             }
           };
-    
+        
         loadData();
       }, []);
 
