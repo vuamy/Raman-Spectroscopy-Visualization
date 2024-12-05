@@ -204,7 +204,7 @@ export default function ScatterPlot( {setSelectedPatientId}: ScatterPlotProps) {
     
     // add legend
     const legend = chartContainer.append('g')
-      .attr('transform', `translate(${size.width - margin.right - 420}, ${margin.top+30})`);
+      .attr('transform', `translate(${size.width - margin.right*1.5}, ${margin.top + size.height / 15})`);
 
     const legendGroups = legend.selectAll('g')
         .data(colorScale.domain())
@@ -223,7 +223,42 @@ export default function ScatterPlot( {setSelectedPatientId}: ScatterPlotProps) {
         .attr('y', 10)
         .style('font-size', '14px')
         .style('fill', 'white');
-  
+    // Calculate mean age and BMI for each stage group
+    const meanValues = d3.rollups(
+      data,
+      v => ({
+      meanAge: d3.mean(v, d => d.age),
+      meanBmi: d3.mean(v, d => d.bmi)
+      }),
+      d => d.stage
+    );
+
+    // Add dashed lines for mean age and BMI
+    if (!highlightedPos) {
+      meanValues.forEach(([stage, { meanAge, meanBmi }]) => {
+      const color = colorScale(stage);
+
+      // Mean age line
+      chartContainer.append('line')
+      .attr('x1', xScale(meanAge))
+      .attr('x2', xScale(meanAge))
+      .attr('y1', margin.top +30)
+      .attr('y2', size.height - margin.bottom)
+      .attr('stroke', color)
+      .attr('stroke-width', 2)
+      .attr('stroke-dasharray', '4 4');
+
+      // Mean BMI line
+      chartContainer.append('line')
+      .attr('x1', margin.left)
+      .attr('x2', size.width - margin.right)
+      .attr('y1', yScale(meanBmi))
+      .attr('y2', yScale(meanBmi))
+      .attr('stroke', color)
+      .attr('stroke-width', 2)
+      .attr('stroke-dasharray', '4 4');
+      });
+    }
 
     // Add title
     chartContainer.append('text')
