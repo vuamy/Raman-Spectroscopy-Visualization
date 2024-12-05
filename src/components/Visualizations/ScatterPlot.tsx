@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import * as d3 from 'd3';
 import { useResizeObserver, useDebounceCallback } from 'usehooks-ts';
-import { isEmpty } from 'lodash';
+import { isEmpty, set } from 'lodash';
 import '../../style.css';
 
 // Define types
@@ -151,7 +151,8 @@ export default function ScatterPlot( {setSelectedPatientId}: ScatterPlotProps) {
       .attr('fill', d => colorScale(d.stage))
       .attr('stroke', 'black')
       .attr('stroke-width', 0.5)
-      .attr('opacity', d => (highlightedPos && d.pos === 'Yes' ? 1 : highlightedPos ? 0.05 : 0.8))
+      .style('display', d => (highlightedPos && d.pos === 'No' ? 'none' : 'block')) // Hide points based on toggle
+      .attr('opacity', 0.8)
       .on('mouseover', (event, d) => {
         // Show tooltip
         tooltip.style('visibility', 'visible')
@@ -167,34 +168,40 @@ export default function ScatterPlot( {setSelectedPatientId}: ScatterPlotProps) {
           .on('mouseout', (event, d) => {
         tooltip.style('visibility', 'hidden');
     })
-    .on('click', (event, d) => {
-      if (d.pos === 'Yes') {
-        if (selectedPatientId === d.id) {
-        // Unselect the patient
-        d3.selectAll('circle')
-          .attr('opacity', d => (highlightedPos && d.pos === 'Yes' ? 1 : highlightedPos ? 0.05 : 0.8))
-          .attr('stroke', 'black')
-          .attr('stroke-width', 0.5);
-        selectedPatientId = null;
-        // console.log('Unselected Patient ID:', d.id);
-        } 
-        else {
-        // Highlight the selected patient
-        d3.selectAll('circle')
-          .attr('opacity', 0.05);
-
-        d3.select(event.currentTarget)
-          .attr('opacity', 1)
-          .attr('stroke', 'yellow')
-          .attr('stroke-width', 2);
-
-        selectedPatientId = d.id;
-        // console.log('Selected Patient ID:', selectedPatientId);
+    .on('click', (event, d: DataPoint) => {
+        if (d.pos === 'Yes') {
+            if (selectedPatientId === d.id) {
+                // Unselect the patient if already selected
+                d3.select(event.currentTarget)
+                  .attr('stroke', 'black')
+                  .attr('stroke-width', 0.5);
+                
+                // Reset all circle opacities
+                d3.selectAll('circle')
+                  .attr('opacity', (d: DataPoint) => (highlightedPos && d.pos === 'Yes' ? 1 : highlightedPos ? 0.05 : 0.8));
+                
+                // Set selectedPatientId to null
+                selectedPatientId = null;
+                setSelectedPatientId(null);
+            } else {
+                // Select a new patient
+                d3.selectAll('circle')
+                  .attr('opacity', 0.05)
+                  .attr('stroke', 'black')
+                  .attr('stroke-width', 0.5);
+                
+                d3.select(event.currentTarget)
+                  .attr('opacity', 1)
+                  .attr('stroke', 'yellow')
+                  .attr('stroke-width', 2);
+                
+                // Update selectedPatientId
+                selectedPatientId = d.id;
+                setSelectedPatientId(d.id);
+            }
         }
-        const newSelectedId = selectedPatientId === d.id ? null : d.id;
-        setSelectedPatientId(newSelectedId);
-      }
-});
+    });
+    
     // add legend
     const legend = chartContainer.append('g')
       .attr('transform', `translate(${size.width - margin.right - 420}, ${margin.top+30})`);

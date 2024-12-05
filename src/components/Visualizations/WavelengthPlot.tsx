@@ -105,7 +105,7 @@ export default function WavelengthPlot({theme, onWavelengthSelect, selectedPatie
                     })) 
                 }));
         };
-
+        console.log('Selected patient:', selectedPatientId)
         const filteredData = filterDataByPatient(wavelengthData, selectedPatientId);
         
         // Create scales
