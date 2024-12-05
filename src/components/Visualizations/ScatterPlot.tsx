@@ -117,8 +117,8 @@ export default function ScatterPlot( {setSelectedPatientId}: ScatterPlotProps) {
       .domain([yExtent[0] - (yExtent[1] - yExtent[0]) * 0.1, yExtent[1] + (yExtent[1] - yExtent[0]) * 0.1]);
   
     const colorScale = d3.scaleOrdinal()
-        .domain(['Healthy', 'Early Stage', 'Late Stage'])
-        .range([ '#3cabe1','#8845de', '#de4646']);
+        .domain(['Late Stage','Early Stage', 'Healthy'])
+        .range(['#cd2a2a', '#cf8a29', '#3cabe1']);
 
     // Create axes
     chartContainer.append('g')
@@ -151,7 +151,7 @@ export default function ScatterPlot( {setSelectedPatientId}: ScatterPlotProps) {
       .attr('fill', d => colorScale(d.stage))
       .attr('stroke', 'black')
       .attr('stroke-width', 0.5)
-      .attr('opacity', d => (highlightedPos && d.pos === 'Yes' ? 1 : highlightedPos ? 0.1 : 0.7))
+      .attr('opacity', d => (highlightedPos && d.pos === 'Yes' ? 1 : highlightedPos ? 0.05 : 0.8))
       .on('mouseover', (event, d) => {
         // Show tooltip
         tooltip.style('visibility', 'visible')
@@ -172,7 +172,7 @@ export default function ScatterPlot( {setSelectedPatientId}: ScatterPlotProps) {
         if (selectedPatientId === d.id) {
         // Unselect the patient
         d3.selectAll('circle')
-          .attr('opacity', d => (highlightedPos && d.pos === 'Yes' ? 1 : highlightedPos ? 0.1 : 0.7))
+          .attr('opacity', d => (highlightedPos && d.pos === 'Yes' ? 1 : highlightedPos ? 0.05 : 0.8))
           .attr('stroke', 'black')
           .attr('stroke-width', 0.5);
         selectedPatientId = null;
@@ -181,7 +181,7 @@ export default function ScatterPlot( {setSelectedPatientId}: ScatterPlotProps) {
         else {
         // Highlight the selected patient
         d3.selectAll('circle')
-          .attr('opacity', 0.1);
+          .attr('opacity', 0.05);
 
         d3.select(event.currentTarget)
           .attr('opacity', 1)
@@ -207,7 +207,7 @@ export default function ScatterPlot( {setSelectedPatientId}: ScatterPlotProps) {
     legendGroups.append('rect')
         .attr('width', 15)
         .attr('height', 15)
-        .attr( 'opacity', 0.7)
+        .attr( 'opacity', 0.9)
         .attr('fill', colorScale);
 
     legendGroups.append('text')

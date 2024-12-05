@@ -203,10 +203,10 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
         // Initialize color scale
         const color = d3.scaleOrdinal([
             "#7B2CBF", "#6C63FF", "#4A90E2",
-            '#de4646', '#8845de', '#3cabe1',
+            '#cd2a2a', '#cf8a29', '#3cabe1',
             "#7B2CBF", "#6C63FF",
-            '#de4646', '#8845de',
-            "#6C63FF", '#45b2de','#25659f','#25a197','#2725a1','#3cabe1',
+            '#de4646', '#3cabe1',
+            "#6C63FF",'#8845de', '#3cd189','#2725a1' ,'#04964f','#5a8739',
 
 ] ); //             "#278557","#3cd189","#d6c946", "#7f782c","#f1b049", "#bf8c3a", "#8c672c", "#604720", "#3b280a", "#322e00"
 
