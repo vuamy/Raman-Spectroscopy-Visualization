@@ -50,6 +50,7 @@ export default function WavelengthPlot({theme, onWavelengthSelect, selectedPatie
             try {
                 const processedData = await processCSVData('../../data/combined_spectra_data.csv');
                 setWavelength(processedData);
+                console.log('processed data:',processedData)
             } catch (error) {
                 console.error('Error in data loading and simplification:', error);
             }
@@ -107,6 +108,7 @@ export default function WavelengthPlot({theme, onWavelengthSelect, selectedPatie
         };
         console.log('Selected patient:', selectedPatientId)
         const filteredData = filterDataByPatient(wavelengthData, selectedPatientId);
+        console.log('Filtered data:', filteredData)
         
         // Create scales
         const xScale = d3.scaleLinear()

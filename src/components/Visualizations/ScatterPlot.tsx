@@ -178,7 +178,7 @@ export default function ScatterPlot( {setSelectedPatientId}: ScatterPlotProps) {
                 
                 // Reset all circle opacities
                 d3.selectAll('circle')
-                  .attr('opacity', (d: DataPoint) => (highlightedPos && d.pos === 'Yes' ? 1 : highlightedPos ? 0.05 : 0.8));
+                  .attr('opacity', (d: DataPoint) => (highlightedPos && d.pos === 'Yes' ? 1 : highlightedPos ? 0.2 : 0.8));
                 
                 // Set selectedPatientId to null
                 selectedPatientId = null;
@@ -186,7 +186,7 @@ export default function ScatterPlot( {setSelectedPatientId}: ScatterPlotProps) {
             } else {
                 // Select a new patient
                 d3.selectAll('circle')
-                  .attr('opacity', 0.05)
+                  .attr('opacity', 0.2)
                   .attr('stroke', 'black')
                   .attr('stroke-width', 0.5);
                 
