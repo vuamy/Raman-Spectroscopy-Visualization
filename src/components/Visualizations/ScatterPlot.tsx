@@ -118,8 +118,8 @@ export default function ScatterPlot( {setSelectedPatientId}: ScatterPlotProps) {
   
     const colorScale = d3.scaleOrdinal()
         .domain(['Healthy', 'Early Stage', 'Late Stage'])
-        .range(['#4A90E2', '#f9a825', '#e53935']);
-  
+        .range([ '#3cabe1','#8845de', '#de4646']);
+
     // Create axes
     chartContainer.append('g')
       .attr('transform', `translate(0, ${size.height - margin.bottom})`)

@@ -119,8 +119,10 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
             csvData.forEach(d => {
                 uniqueCategories.add(d.stage);
                 uniqueCategories.add(d.bmi); 
-                uniqueCategories.add(d.age);                
-            });//                uniqueCategories.add(d.gender); uniqueCategories.add(d.race);
+                uniqueCategories.add(d.age);
+                uniqueCategories.add(d.gender); 
+                uniqueCategories.add(d.race);                
+            });//                
             
             const nodes: SankeyNode[] = []
             
@@ -139,7 +141,7 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
 
             // Create links
             const links: SankeyLink[] = [];
-            const levels = [ 'bmi', 'stage', 'age']; // Sankey flow from left to right, 'bmi', 'age', 'race', 'gender'
+            const levels = [ 'bmi', 'stage', 'age', 'gender', 'race']; // Sankey flow from left to right, 'bmi', 'age', 'race', 'gender'
 
             for (let i = 0; i < levels.length - 1; i++) {
                 const currentLevel = levels[i];
@@ -199,7 +201,14 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
                     "translate(" + margin.left + "," + margin.top + ")");
 
         // Initialize color scale
-        const color = d3.scaleOrdinal(["#4A90E2", "#6C63FF", "#7B2CBF", "#9B5DE5", "#C084FC", "#FF89BB", "#FF5D8F", "#FF2E63", "#D72638", "#851DE0"] );
+        const color = d3.scaleOrdinal([
+            "#7B2CBF", "#6C63FF", "#4A90E2",
+            '#de4646', '#8845de', '#3cabe1',
+            "#7B2CBF", "#6C63FF",
+            '#de4646', '#8845de',
+            "#6C63FF", '#45b2de','#25659f','#25a197','#2725a1','#3cabe1',
+
+] ); //             "#278557","#3cd189","#d6c946", "#7f782c","#f1b049", "#bf8c3a", "#8c672c", "#604720", "#3b280a", "#322e00"
 
         // Create sankey and set properties
         const sankeyDiagram = sankey()
@@ -246,7 +255,7 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
         .style("fill", "none") // Ensure no fill for paths
         .style("stroke", d => color(d.source.id)) // Use your color function
         .style("stroke-width", d => Math.max(1, (d.width + 2|| 0)))
-        .style("opacity", 0.8)
+        .style("opacity", 0.7)
 
         // Create sankey nodes 
         const sankeyNodes = zoomableGroup.selectAll()
@@ -279,7 +288,7 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
         const columnLabels = zoomableGroup.attr("class", "column-labels");
 
         // Create labels
-        const levels = [ 'BMI', 'Stage', 'Age'];//, 'BMI', 'Age', 'Race', 'Gender'
+        const levels = [ 'BMI', 'Stage', 'Age', 'Gender', 'Race'];//, 'BMI', 'Age', 'Race', 'Gender'
         sortedColumns.forEach(([xPosition, nodes], index) => {
             columnLabels.append("text")
                 .attr("x", (xPosition || 0))
@@ -294,54 +303,8 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
         function getColumnLabel(index: number) {
             return levels[index] || "Unknown";
         }
-        // Create select menus for each column
-        sortedColumns.forEach(([xPosition, nodes], index) => {
-            const selectMenu = columnLabels.append("foreignObject")
-            .attr("x", (xPosition || 0) - 50)
-            .attr("y", -30)
-            .attr("width", 100)
-            .attr("height", 30)
-            .append("xhtml:div")
-            .append("select")
-            .style("width", "100px")
-            .style("height", "20px")
-            .on("change", function(event) {
-                const selectedAttribute = event.target.value;
-                updateSankeyColumn(index, selectedAttribute);
-            });
+       
 
-            levels.forEach(level => {
-            selectMenu.append("option")
-                .attr("value", level)
-                .text(level)
-                .property("selected", level === levels[index]);
-            });
-        });
-
-        // Function to update the Sankey diagram when a new attribute is selected
-        function updateSankeyColumn(columnIndex, newAttribute) {
-            const newLevels = [...levels];
-            newLevels[columnIndex] = newAttribute;
-
-            const newLinks = [];
-            for (let i = 0; i < newLevels.length - 1; i++) {
-            const currentLevel = newLevels[i];
-            const nextLevel = newLevels[i + 1];
-            const flows = d3.rollups(
-                csvData,
-                v => v.length,
-                d => d[currentLevel],
-                d => d[nextLevel]
-            );
-            flows.forEach(([source, targets]) => {
-                targets.forEach(([target, value]) => {
-                newLinks.push({ source, target, value });
-                });
-            });
-            }
-
-            setSankey({ nodes: sankeyData.nodes, links: newLinks });
-        }
 
         // Create plot label
         const title = sankeyContainer.append('g')
@@ -372,7 +335,7 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
                 sankeyLinks
                     .transition()
                     .duration(500)
-                    .style("stroke-opacity", 0.8)
+                    .style("stroke-opacity", 0.9)
                     .style("stroke", d => color(d.source.id));
                 sankeyNodes
                     .transition()
@@ -389,11 +352,11 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
                     .transition()
                     .duration(500)
                     .style("stroke-opacity", d =>
-                        d.source.id === node.id || d.target.id === node.id ? 1 : 0.2
-                    )
-                    .style("stroke", d =>
-                        d.source.id === node.id || d.target.id === node.id ? "#E2B6FF" : color(d.source.id)
+                        d.source.id === node.id || d.target.id === node.id ? 1 : 0.1
                     );
+                    // .style("stroke", d =>
+                    //     d.source.id === node.id || d.target.id === node.id ? "#E2B6FF" : color(d.source.id)
+                    // );
                     
             
                 // Highlight connected nodes
@@ -404,7 +367,7 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
                         d.id === node.id || graph.links.some(link => 
                             (link.source.id === node.id && link.target.id === d.id) ||
                             (link.target.id === node.id && link.source.id === d.id)
-                        ) ? 1 : 0.5);
+                        ) ? 1 : 0.1);
 
             }
         }
