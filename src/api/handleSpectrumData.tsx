@@ -15,6 +15,7 @@ export const processCSVData = async (filePath: string) => {
     const groupedData = d3.group(csvData, d => d.id);
     const processedData = Array.from(groupedData, ([id, values], index) => ({
       id,
+      patient: values[0].patient,
       line: values[0].line,
       ring: values[0].ring,
       series: values.map(v => ({ wavelength: v.wavelength, intensity: v.intensity})),

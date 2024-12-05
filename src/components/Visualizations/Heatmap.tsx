@@ -18,12 +18,13 @@ interface Wavelength {
     }[];
 }
 
-interface WavelengthProps {
+interface InputProps {
     selectedWavelength?: (color: number | null) => void;
+    selectedPatientId?: (color: string | null) => void;
     theme: any;
 }
 
-export default function Heatmap({ theme, selectedWavelength }: WavelengthProps) {
+export default function Heatmap({ theme, selectedWavelength, selectedPatientId }: InputProps) {
     
     // Initialize use states
     const [heatmapData, setHeatmap] = useState<Wavelength[]>([]);
@@ -60,7 +61,7 @@ export default function Heatmap({ theme, selectedWavelength }: WavelengthProps) 
         if (size.width === 0 || size.height === 0) return;
         d3.select('#heatmap-svg').selectAll('*').remove();
         initHeatmap();
-    }, [heatmapData, size, selectedWavelength])
+    }, [heatmapData, size, selectedWavelength, selectedPatientId])
 
     // Initialize heatmap
     function initHeatmap() {
@@ -100,7 +101,7 @@ export default function Heatmap({ theme, selectedWavelength }: WavelengthProps) 
           };
 
         // Grab necessary data
-        const filteredData = filterDataByWavelength(heatmapData, selectedWavelength, '310');
+        const filteredData = filterDataByWavelength(heatmapData, selectedWavelength, selectedPatientId);
 
         // Initialize color scale
         const min = d3.min(filteredData, d => d.intensity) || 0;
@@ -180,6 +181,15 @@ export default function Heatmap({ theme, selectedWavelength }: WavelengthProps) 
                 .attr("y", -160)
                 .attr("x", -55)
 
+            // Display patient id number
+            const patientIdDisplay = svg.append("g")
+                .append("text")
+                .text("Patient: " + selectedPatientId)
+                .attr('fill', 'white')
+                .attr('y', -30)
+                .attr('x', width/2 - 60)
+
+            // Display wavelength value
             const wavelengthDisplay = svg.append("g")
                 .append("text")
                 .text("Wavelength: " + (Number(selectedWavelength) > 0 ? selectedWavelength.toFixed(2) : 0))

@@ -12,18 +12,20 @@ import simplify from 'simplify-js'
 
 interface Wavelength {
     id: string | number;
+    patient: string;
     series: {
         wavelength: number;
         intensity: number;
     }[];
 }
 
-interface WavelengthProps {
+interface InputProps {
     onWavelengthSelect?: (color: number | null) => void;
+    selectedPatientId?: (color: string | null) => void;
     theme: any;
 }
 
-export default function WavelengthPlot({theme, onWavelengthSelect}:  WavelengthProps) {
+export default function WavelengthPlot({theme, onWavelengthSelect, selectedPatientId}:  InputProps) {
     
     // Initialize use states
     const [wavelengthData, setWavelength] = useState<Wavelength[]>([]);
@@ -43,31 +45,16 @@ export default function WavelengthPlot({theme, onWavelengthSelect}:  WavelengthP
     }, [theme]);
     
     useEffect(() => {
-        // Currently data is reduced by a lot
-        // Simplify data
-        const simplifyData = (data: Wavelength[], tolerance = 1.0) => {
-            return data.map(d => ({
-              ...d,
-              series: simplify(
-                d.series.map(p => ({ x: p.wavelength, y: p.intensity })),
-                tolerance
-              ).map(p => ({ wavelength: p.x, intensity: p.y })),
-            }));
-          };
-          
         // Call the data processing function
         const loadData = async () => {
             try {
                 const processedData = await processCSVData('../../data/combined_spectra_data.csv');
-                const sampleSize = 10;
-                const subset = processedData.slice(0, sampleSize);
-                console.log("Wavelength data:", processedData);
-                setWavelength(subset);
+                setWavelength(processedData);
             } catch (error) {
                 console.error('Error in data loading and simplification:', error);
             }
           };
-        
+    
         loadData();
       }, []);
 
@@ -78,7 +65,7 @@ export default function WavelengthPlot({theme, onWavelengthSelect}:  WavelengthP
         const svg = d3.select('#wavelength-svg')
         svg.selectAll("*").remove();
         initWavelength();
-    }, [wavelengthData, size])
+    }, [wavelengthData, size, selectedWavelength, selectedPatientId])
 
     // Initialize wavelength series plot
     function initWavelength() {
@@ -104,6 +91,22 @@ export default function WavelengthPlot({theme, onWavelengthSelect}:  WavelengthP
         const xMax = d3.max(wavelengthData, d => d3.max(d.series, p => p.wavelength)) || 0;
         const yMin = d3.min(wavelengthData, d => d3.min(d.series, p => p.intensity)) || 0;
         const yMax = d3.max(wavelengthData, d => d3.max(d.series, p => p.intensity)) || 0;
+
+        // Function to filter data based on patient
+        const filterDataByPatient = (data: Wavelength[], targetPatient: string): Wavelength[] => {
+            return data
+                .filter(d => d.patient === targetPatient) // Keep only entries with the target patient
+                .map(d => ({
+                    id: d.id,
+                    patient: d.patient,
+                    series: d.series.map(point => ({
+                        wavelength: point.wavelength,
+                        intensity: point.intensity
+                    })) 
+                }));
+        };
+
+        const filteredData = filterDataByPatient(wavelengthData, selectedPatientId);
         
         // Create scales
         const xScale = d3.scaleLinear()
@@ -147,7 +150,7 @@ export default function WavelengthPlot({theme, onWavelengthSelect}:  WavelengthP
 
         // Add wavelength lines for each patient
         wavelengthGroup.selectAll('.wavelength-line')
-            .data(wavelengthData)
+            .data(filteredData)
             .join('path')
             .attr('class', 'wavelength-line')
             .attr('d', d => lineGenerator(d.series)!)
