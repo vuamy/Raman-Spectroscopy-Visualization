@@ -200,6 +200,7 @@ export default function ScatterPlot( {setSelectedPatientId, setSelectedWavelengt
                 // Update selectedPatientId
                 selectedPatientId = d.id;
                 setSelectedPatientId(d.id);
+                
             }
         }
     });

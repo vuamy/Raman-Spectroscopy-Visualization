@@ -10,6 +10,7 @@ import { processCSVData } from '../../api/handleSpectrumData.tsx'
 
 interface Wavelength {
     id: string | number;
+    patient: string;
     line: string | number;
     ring: string | number;
     series: {
@@ -79,20 +80,25 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId }
             .attr("width", size.width)
             .attr("height", size.height)
             .append("g")
-                .attr("transform", "translate(" + (width/2 - 50) + "," + (height/2 + 60) + ")");
+                .attr("transform", "translate(" + (width/2 - 50) + "," + (height/2 + 70) + ")");
+
+        // Function to find matching intensity for selected patient
+        const filterDataByPatient = (data: Wavelength[], targetPatient:string) => {
+            return data.filter(d => d.patient === targetPatient)
+        }
 
         // Function to find matching intesity for some wavelength
-        const filterDataByWavelength = (data: Wavelength[], targetWavelength: number, targetPatient: string) => {
+        const filterDataByWavelength = (data: Wavelength[], targetWavelength: number) => {
             return data.map(d => {
               const matchingEntry = d.series.find(s => s.wavelength < targetWavelength && s.wavelength + 0.119 > targetWavelength);
               return matchingEntry
                 ? ((Number(d.ring) <= 25) ? {
-                    patient: targetPatient,
+                    patient: d.patient,
                     line: Number(d.line), 
                     ring: Number(d.ring),
                     intensity: matchingEntry.intensity
                   } : {
-                    patient: targetPatient,
+                    patient: d.patient,
                     line: 4 + Number(d.line), 
                     ring: 51 - Number(d.ring),
                     intensity: matchingEntry.intensity}
@@ -100,15 +106,22 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId }
             }).filter(d => d !== null);
           };
 
-        // Grab necessary data
-        const filteredData = filterDataByWavelength(heatmapData, typeof selectedWavelength === 'number' ? selectedWavelength : 0, selectedPatientId ?? '');
-        // Initialize color scale
-        const min = d3.min(filteredData, d => d.intensity) ?? 0;
-        const max = d3.max(filteredData, d => d.intensity) ?? 0;
-        const clippedMax = d3.quantile(filteredData.map(d => d.intensity).sort(d3.ascending), 0.95) ?? 0;
+        // First filter by patient
+        const filteredByPatient = filterDataByPatient(heatmapData, selectedPatientId ?? '');
+        
+        // Initialize min and max of patient
+        const allIntensities = filteredByPatient.flatMap(d => d.series.map(s => s.intensity));
+        const minIntensity = d3.min(allIntensities) ?? 0;
+        const maxIntensity = d3.max(allIntensities) ?? 0;
+        const clippedMax = d3.quantile(allIntensities.sort(d3.ascending), 0.95) ?? maxIntensity;
 
+        // Filter by wavelength
+        const filteredData = filterDataByWavelength(filteredByPatient, 
+            typeof selectedWavelength === 'number' ? selectedWavelength : 0);
+
+        // Create color scale
         const colorScale = d3.scaleSequential(d3.interpolateBlues)
-            .domain([min, clippedMax]);
+            .domain([minIntensity, clippedMax]);
         
         // Create line angle scale
         const angleScale = d3.scaleBand()
@@ -118,11 +131,11 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId }
 
         // Create each individual segment
         const segmentAngle = (2 * Math.PI) / 8;
-        
+
         // Create ring radial scale
         const radialScale = d3.scaleLinear()
-            .domain([1, 25])
-            .range([0, radius])
+            .domain([25, 1])
+            .range([radius/3, radius])
 
             svg.selectAll("path")
             .data(filteredData)
@@ -144,60 +157,95 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId }
                 
                 return arc();
             })
-            .attr("fill", "none")
-            .attr("stroke", "gray")
-            .attr("stroke-width", 0.5)
-            .style("opacity", 0.1);
+            .attr("fill", d => colorScale(d.intensity))
+            .attr("stroke", "black")
+            .on("mouseover", function (event, d) {
+                // Show tooltip and update its content
+                tooltip.style("visibility", "visible");
+                const tooltipContent = `Line: ${d.line < 5 ? d.line : d.line - 4}, Ring: ${d.line < 5 ? d.ring : 51 - d.ring}, Intensity: ${d.intensity.toFixed(1)}`;
+                tooltipText.text(tooltipContent);
+        
+                // Get the bounding box of the text for the rectangle
+                const bbox = tooltipText.node().getBBox();
+                tooltipRect
+                    .attr("width", bbox.width + 10)
+                    .attr("height", bbox.height + 5)
+                    .attr("x", bbox.x - 5)
+                    .attr("y", bbox.y - 2.5);
+            })
+            .on("mousemove", function (event) {
+                // Update tooltip position
+                const [x, y] = d3.pointer(event, svg.node());
+                tooltip.attr("transform", `translate(${x + 10}, ${y - 20})`);
+            })
+            .on("mouseout", function () {
+                // Hide tooltip when the mouse leaves
+                tooltip.style("visibility", "hidden");
+            });
 
-            // Add label for each line
-            svg.selectAll(".line-label")
+        // Add label for each line
+        svg.selectAll(".line-label")
             .data([1, 2, 3, 4, 5, 6, 7, 8]) // Assuming 4 lines
             .join("text")
             .attr("class", "line-label")
-            .attr("x", d => (radius + 30) * Math.cos(angleScale(d) - Math.PI / 2))
-            .attr("y", d => (radius + 18) * Math.sin(angleScale(d) - Math.PI / 2))
+            .attr("x", d => (radius + 30) * Math.cos((angleScale(d) + 0.4) - Math.PI / 2))
+            .attr("y", d => (radius + 18) * Math.sin((angleScale(d) + 0.4) - Math.PI / 2))
             .attr("text-anchor", "middle")
             .attr("font-size", 12)
             .attr("fill", "white")
-            .text(d => d < 4 ? `Line ${d}` : `Line ${d - 4}`);
-        
-            // Add circle data point for each measurement
-            svg.selectAll(".data-point")
-            .data(filteredData)
-            .join("circle")
-            .attr("class", "data-point")
-            .attr("cx", d => radialScale(d.ring) * Math.cos(angleScale(d.line) - Math.PI / 2))
-            .attr("cy", d => radialScale(d.ring) * Math.sin(angleScale(d.line) - Math.PI / 2))
-            .attr("r", 3)
-            .attr("fill", d => colorScale(d.intensity));
+            .text(d => d < 5 ? `Line ${d}` : `Line ${d - 4}`)
 
-            // Add plot title
-            const plotTitle = svg.append("g")
+        // Add plot title
+        const plotTitle = svg.append("g")
             .append("text")
             .text("Spatial Variance of Selected Patient at Selected Wavelength")
             .attr("fill", "white")
             .attr("font-weight", "bold")
-            .attr("y", -220)
-            .attr("x", -220)
+            .attr("y", -160)
+            .attr("x", -150)
 
-            // Display patient id number
-            const patientIdDisplay = svg.append("g")
-                .append("text")
-                .text("Patient: " + selectedPatientId)
-                .attr('fill', 'white')
-                .attr('y', -100)
-                .attr('x', 170)
-                .attr("font-size", "12px")
+        // Display patient id number
+        const patientIdDisplay = svg.append("g")
+            .append("text")
+            .text("Patient: " + selectedPatientId)
+            .attr('fill', 'white')
+            .attr('y', -100)
+            .attr('x', 170)
+            .attr("font-size", "12px")
 
-            // Display wavelength value
-            const wavelengthDisplay = svg.append("g")
-                .append("text")
-                .text("Wavelength: " + (Number(selectedWavelength) > 0 ? selectedWavelength.toFixed(2) : 0))
-                .attr('fill', 'white')
-                .attr('y', -80)
-                .attr('x', 170)
-                .attr("font-size", "12px")
-        }
+        // Display wavelength value
+        const wavelengthDisplay = svg.append("g")
+            .append("text")
+            .text("Wavelength: " + (Number(selectedWavelength) > 0 ? selectedWavelength.toFixed(2) : 0))
+            .attr('fill', 'white')
+            .attr('y', -80)
+            .attr('x', 170)
+            .attr("font-size", "12px")
+
+        // Create tooltip for hovering on points
+        const tooltip = svg
+            .append("g")
+            .attr("id", "tooltip")
+            .style("pointer-events", "none")
+            .style("visibility", "hidden");
+
+        // Add a background rectangle for the tooltip
+        const tooltipRect = tooltip
+            .append("rect")
+            .attr("fill", "rgba(0, 0, 0, 0.8)")
+            .attr("rx", 4)
+            .attr("ry", 4)
+
+        // Add text to the tooltip
+        const tooltipText = tooltip
+            .append("text")
+            .attr("fill", "white")
+            .attr("x", 10)
+            .attr("y", 20)
+            .attr("padding", 0)
+            .style("font-size", "10px")
+            .style("font-family", "Arial, sans-serif");
+    }
 
     return (
         <>
