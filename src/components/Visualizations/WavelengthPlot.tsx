@@ -218,7 +218,7 @@ export default function WavelengthPlot({theme, onWavelengthSelect, selectedPatie
         // Add plot title
         const plotTitle = svg.append("g")
             .append("text")
-            .text("Wavelength Series")
+            .text("Raman Spectra of Selected Patient")
             .attr('transform', `translate(${width/2 - margin.right},${0})`)
             .attr('fill', 'white')
             .attr('font-weight', 'bold')
@@ -266,66 +266,66 @@ export default function WavelengthPlot({theme, onWavelengthSelect, selectedPatie
             .attr("fill", "none")
             .attr("pointer-events", "all")
             .on("mouseover", () => {
-                tooltip.style("display", "block");
-                verticalLine.style("opacity", 0.2);
-                horizontalLine.style("opacity", 0.2);
+            tooltip.style("display", "block");
+            verticalLine.style("opacity", 0.2);
+            horizontalLine.style("opacity", 0.2);
             })
             .on("mousemove", (event) => {
-                const [mouseX, mouseY] = d3.pointer(event);
+            const [mouseX, mouseY] = d3.pointer(event);
 
-                // Change values depending on mouse locat)ion
-                const xValue = xScale.invert(mouseX);
-                const yValue = yScale.invert(mouseY);
+            // Change values depending on mouse location
+            const xValue = xScale.invert(mouseX);
+            const yValue = yScale.invert(mouseY);
 
-                // Update tooltip
-                tooltip
-                    .style("display", "block")
-                    .style("left", `${event.pageX + 10}px`)
-                    .style("top", `${event.pageY - 10}px`)
-                    .html(`
-                        Wavelength: ${xValue.toFixed(0)}<br>
-                        Intensity: ${yValue.toFixed(0)}
-                    `);
+            // Update tooltip
+            tooltip
+                .style("display", "block")
+                .style("left", `${event.pageX + 10}px`)
+                .style("top", `${event.pageY - 10}px`)
+                .html(`
+                Wavelength: ${xValue.toFixed(0)}<br>
+                Intensity: ${yValue.toFixed(0)}
+                `);
 
-                // Update vertical and horizontal lines
-                verticalLine
-                    .attr("x1", mouseX)
-                    .attr("x2", mouseX)
-                    .attr("y1", 0)
-                    .attr("y2", height);
+            // Update vertical and horizontal lines
+            verticalLine
+                .attr("x1", mouseX)
+                .attr("x2", mouseX)
+                .attr("y1", 0)
+                .attr("y2", height);
 
-                horizontalLine
-                    .attr("x1", 0)
-                    .attr("x2", width)
-                    .attr("y1", mouseY)
-                    .attr("y2", mouseY);
+            horizontalLine
+                .attr("x1", 0)
+                .attr("x2", width)
+                .attr("y1", mouseY)
+                .attr("y2", mouseY);
             })
             .on("mouseout", () => {
-                tooltip.style("display", "none");
-                verticalLine.style("opacity", 0);
-                horizontalLine.style("opacity", 0);
+            tooltip.style("display", "none");
+            verticalLine.style("opacity", 0);
+            horizontalLine.style("opacity", 0);
             })
             .on("click", (event) => {
-                const [mouseX] = d3.pointer(event);
-                const xValue = xScale.invert(mouseX);
-                selectWavelength.style("opacity", 0.5);
-                selectWavelength
-                    .attr("x1", mouseX)
-                    .attr("x2", mouseX)
-                    .attr("y1", 0)
-                    .attr("y2", height)
-                wavelengthText
-                    .text(xValue.toFixed(0))
-                    .attr('x', mouseX - 10)
-                    .attr('y', -10)
+            const [mouseX] = d3.pointer(event);
+            const xValue = xScale.invert(mouseX);
+            selectWavelength.style("opacity", 1);
+            selectWavelength
+                .attr("x1", mouseX)
+                .attr("x2", mouseX)
+                .attr("y1", 0)
+                .attr("y2", height);
+            wavelengthText
+                .text(xValue.toFixed(0))
+                .attr('x', mouseX - 10)
+                .attr('y', -10);
 
-                tooltip.style("display", "none");
+            tooltip.style("display", "none");
 
-                if (onWavelengthSelect) {
-                    onWavelengthSelect(xValue);
-                }
-                setSelectedWavelength(xValue);
-            })
+            if (onWavelengthSelect) {
+                onWavelengthSelect(xValue);
+            }
+            setSelectedWavelength(xValue);
+            });
 
     }
 

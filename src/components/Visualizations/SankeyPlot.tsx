@@ -315,7 +315,7 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
             .style("fill", theme.palette.text.primary)
             .style('font-weight', 'bold')
             .style('font-size', '18px')
-            .text('Patient Metadata Distribution')
+            .text('Patient Metadata Overview')
 
         // Track if currently in higlighted state
         let isHighlighted = false;

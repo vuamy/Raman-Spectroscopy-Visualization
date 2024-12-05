@@ -79,7 +79,7 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId }
             .attr("width", size.width)
             .attr("height", size.height)
             .append("g")
-                .attr("transform", "translate(" + (width/2 - 60) + "," + (height/2 + 60) + ")");
+                .attr("transform", "translate(" + (width/2) + "," + (height/2 + 60) + ")");
 
         // Function to find matching intesity for some wavelength
         const filterDataByWavelength = (data: Wavelength[], targetWavelength: number, targetPatient: string) => {
@@ -101,12 +101,11 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId }
           };
 
         // Grab necessary data
-        const filteredData = filterDataByWavelength(heatmapData, selectedWavelength, selectedPatientId);
-
+        const filteredData = filterDataByWavelength(heatmapData, typeof selectedWavelength === 'number' ? selectedWavelength : 0, selectedPatientId ?? '');
         // Initialize color scale
-        const min = d3.min(filteredData, d => d.intensity) || 0;
-        const max = d3.max(filteredData, d => d.intensity) || 0;
-        const clippedMax = d3.quantile(filteredData.map(d => d.intensity).sort(d3.ascending), 0.95);
+        const min = d3.min(filteredData, d => d.intensity) ?? 0;
+        const max = d3.max(filteredData, d => d.intensity) ?? 0;
+        const clippedMax = d3.quantile(filteredData.map(d => d.intensity).sort(d3.ascending), 0.95) ?? 0;
 
         const colorScale = d3.scaleSequential(d3.interpolateBlues)
             .domain([min, clippedMax]);
@@ -126,76 +125,76 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId }
             .range([0, radius])
 
             svg.selectAll("path")
-                .data(filteredData)
-                .join("path")
-                .attr("d", d => {
-                    const startAngle = (d.line - 1) * segmentAngle;;
-                    const endAngle = startAngle + segmentAngle;
-                    
-                    // Inner and outer radius
-                    const innerRadius = radialScale(d.ring);
-                    const outerRadius = radialScale(d.ring + 1);
-                    
-                    // Generate arc
-                    const arc = d3.arc()
-                        .innerRadius(innerRadius)
-                        .outerRadius(outerRadius)
-                        .startAngle(startAngle)
-                        .endAngle(endAngle);
-                    
-                    return arc();
-                })
-                .attr("fill", "none")
-                .attr("stroke", "gray")
-                .attr("stroke-width", 0.5)
-                .style("opacity", 0.1);
+            .data(filteredData)
+            .join("path")
+            .attr("d", d => {
+                const startAngle = (d.line - 1) * segmentAngle;
+                const endAngle = startAngle + segmentAngle;
+                
+                // Inner and outer radius
+                const innerRadius = radialScale(d.ring);
+                const outerRadius = radialScale(d.ring + 1);
+                
+                // Generate arc
+                const arc = d3.arc()
+                .innerRadius(innerRadius)
+                .outerRadius(outerRadius)
+                .startAngle(startAngle)
+                .endAngle(endAngle);
+                
+                return arc();
+            })
+            .attr("fill", "none")
+            .attr("stroke", "gray")
+            .attr("stroke-width", 0.5)
+            .style("opacity", 0.1);
 
             // Add label for each line
             svg.selectAll(".line-label")
-                .data([1, 2, 3, 4, 5, 6, 7, 8]) // Assuming 4 lines
-                .join("text")
-                .attr("class", "line-label")
-                .attr("x", d => (radius + 15) * Math.cos(angleScale(d) - Math.PI / 2))
-                .attr("y", d => (radius + 15) * Math.sin(angleScale(d) - Math.PI / 2))
-                .attr("text-anchor", "middle")
-                .attr("font-size", 8)
-                .attr("fill", "white")
-                .text(d => `Line ${d}`);
+            .data([1, 2, 3, 4, 1, 2, 3, 4]) // Assuming 4 lines
+            .join("text")
+            .attr("class", "line-label")
+            .attr("x", d => (radius + 35) * Math.cos(angleScale(d) - Math.PI / 2))
+            .attr("y", d => (radius + 15) * Math.sin(angleScale(d) - Math.PI / 2))
+            .attr("text-anchor", "middle")
+            .attr("font-size", 14)
+            .attr("fill", "white")
+            .text(d => `Line ${d}`);
         
             // Add circle data point for each measurement
             svg.selectAll(".data-point")
-                .data(filteredData)
-                .join("circle")
-                .attr("class", "data-point")
-                .attr("cx", d => radialScale(d.ring) * Math.cos(angleScale(d.line) - Math.PI / 2))
-                .attr("cy", d => radialScale(d.ring) * Math.sin(angleScale(d.line) - Math.PI / 2))
-                .attr("r", 3)
-                .attr("fill", d => colorScale(d.intensity))
+            .data(filteredData)
+            .join("circle")
+            .attr("class", "data-point")
+            .attr("cx", d => radialScale(d.ring) * Math.cos(angleScale(d.line) - Math.PI / 2))
+            .attr("cy", d => radialScale(d.ring) * Math.sin(angleScale(d.line) - Math.PI / 2))
+            .attr("r", 3)
+            .attr("fill", d => colorScale(d.intensity));
 
             // Add plot title
             const plotTitle = svg.append("g")
-                .append("text")
-                .text("Spatial Variance")
-                .attr("fill", "white")
-                .attr("font-weight", "bold")
-                .attr("y", -160)
-                .attr("x", -55)
+            .append("text")
+            .text("Spatial Variance of Selected Patient at Selected Wavelength")
+            .attr("fill", "white")
+            .attr("font-weight", "bold")
+            .attr("y", -220)
+            .attr("x", -220)
 
             // Display patient id number
             const patientIdDisplay = svg.append("g")
                 .append("text")
                 .text("Patient: " + selectedPatientId)
                 .attr('fill', 'white')
-                .attr('y', -30)
-                .attr('x', width/2 - 60)
+                .attr('y', -190)
+                .attr('x', - 220)
 
             // Display wavelength value
             const wavelengthDisplay = svg.append("g")
                 .append("text")
                 .text("Wavelength: " + (Number(selectedWavelength) > 0 ? selectedWavelength.toFixed(2) : 0))
                 .attr('fill', 'white')
-                .attr('y', -50)
-                .attr('x', width/2 - 60)
+                .attr('y', -170)
+                .attr('x', -220)
         }
 
     return (
