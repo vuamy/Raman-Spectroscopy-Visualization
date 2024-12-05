@@ -32,10 +32,6 @@ function Layout() {
   const [selectedWavelength, setSelectedWavelength] = useState<number | null>(null);
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
 
-  const handleWavelengthSelect = (wavelength: number | null) => {
-    setSelectedWavelength(wavelength);
-  };
-
   return (
     <div>
       <Navbar />
@@ -48,14 +44,14 @@ function Layout() {
             </Grid>
             <Grid item xs={4} className="plot" sx={{ height: '100%' }}>
             <div style={{ width: '100%', height: '100%'}}> 
-              <ScatterPlot setSelectedPatientId={setSelectedPatientId} />
+              <ScatterPlot setSelectedPatientId={setSelectedPatientId} setSelectedWavelength={setSelectedWavelength}/>
             </div>
         </Grid>
           </Grid>
         <Grid container item direction='row' xs={6} sm={6} md={6} lg={6} sx={{ height: '100%' }}>
           <Grid item xs={8} className="plot" sx={{ height: '100%' }}>
               <div style={{ width: '100%', height: '100%'}}> 
-                <WavelengthPlot theme={theme} onWavelengthSelect={handleWavelengthSelect} selectedPatientId={selectedPatientId}/>
+                <WavelengthPlot theme={theme} setSelectedWavelength={setSelectedWavelength} selectedPatientId={selectedPatientId}/>
               </div> 
           </Grid>
           <Grid item xs={4} className="plot" sx={{ height: '100%' }}>

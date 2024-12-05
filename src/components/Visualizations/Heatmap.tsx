@@ -79,7 +79,7 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId }
             .attr("width", size.width)
             .attr("height", size.height)
             .append("g")
-                .attr("transform", "translate(" + (width/2) + "," + (height/2 + 60) + ")");
+                .attr("transform", "translate(" + (width/2 - 50) + "," + (height/2 + 60) + ")");
 
         // Function to find matching intesity for some wavelength
         const filterDataByWavelength = (data: Wavelength[], targetWavelength: number, targetPatient: string) => {
@@ -151,15 +151,15 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId }
 
             // Add label for each line
             svg.selectAll(".line-label")
-            .data([1, 2, 3, 4, 1, 2, 3, 4]) // Assuming 4 lines
+            .data([1, 2, 3, 4, 5, 6, 7, 8]) // Assuming 4 lines
             .join("text")
             .attr("class", "line-label")
-            .attr("x", d => (radius + 35) * Math.cos(angleScale(d) - Math.PI / 2))
-            .attr("y", d => (radius + 15) * Math.sin(angleScale(d) - Math.PI / 2))
+            .attr("x", d => (radius + 30) * Math.cos(angleScale(d) - Math.PI / 2))
+            .attr("y", d => (radius + 18) * Math.sin(angleScale(d) - Math.PI / 2))
             .attr("text-anchor", "middle")
-            .attr("font-size", 14)
+            .attr("font-size", 12)
             .attr("fill", "white")
-            .text(d => `Line ${d}`);
+            .text(d => d < 4 ? `Line ${d}` : `Line ${d - 4}`);
         
             // Add circle data point for each measurement
             svg.selectAll(".data-point")
@@ -185,16 +185,18 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId }
                 .append("text")
                 .text("Patient: " + selectedPatientId)
                 .attr('fill', 'white')
-                .attr('y', -190)
-                .attr('x', - 220)
+                .attr('y', -100)
+                .attr('x', 170)
+                .attr("font-size", "12px")
 
             // Display wavelength value
             const wavelengthDisplay = svg.append("g")
                 .append("text")
                 .text("Wavelength: " + (Number(selectedWavelength) > 0 ? selectedWavelength.toFixed(2) : 0))
                 .attr('fill', 'white')
-                .attr('y', -170)
-                .attr('x', -220)
+                .attr('y', -80)
+                .attr('x', 170)
+                .attr("font-size", "12px")
         }
 
     return (

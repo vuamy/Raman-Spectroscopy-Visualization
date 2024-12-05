@@ -29,10 +29,11 @@ interface Margin {
 
 interface ScatterPlotProps {
     setSelectedPatientId: (id: string | null) => void; // Prop for setting selected patient ID
+    setSelectedWavelength: (id: number | null) => void;
   }
 
 
-export default function ScatterPlot( {setSelectedPatientId}: ScatterPlotProps) {
+export default function ScatterPlot( {setSelectedPatientId, setSelectedWavelength}: ScatterPlotProps) {
   const [data, setData] = useState<DataPoint[]>([]);
   const scatterRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<ComponentSize>({ width: 0, height: 0 });
@@ -183,6 +184,7 @@ export default function ScatterPlot( {setSelectedPatientId}: ScatterPlotProps) {
                 // Set selectedPatientId to null
                 selectedPatientId = null;
                 setSelectedPatientId(null);
+                setSelectedWavelength(0)
             } else {
                 // Select a new patient
                 d3.selectAll('circle')

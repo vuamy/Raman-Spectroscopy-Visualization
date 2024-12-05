@@ -20,12 +20,12 @@ interface Wavelength {
 }
 
 interface InputProps {
-    onWavelengthSelect?: (color: number | null) => void;
+    setSelectedWavelength?: (color: number | null) => void;
     selectedPatientId?: (color: string | null) => void;
     theme: any;
 }
 
-export default function WavelengthPlot({theme, onWavelengthSelect, selectedPatientId}:  InputProps) {
+export default function WavelengthPlot({theme, setSelectedWavelength, selectedPatientId}:  InputProps) {
     
     // Initialize use states
     const [wavelengthData, setWavelength] = useState<Wavelength[]>([]);
@@ -33,7 +33,6 @@ export default function WavelengthPlot({theme, onWavelengthSelect, selectedPatie
     const [size, setSize] = useState<ComponentSize>({ width: 0, height: 0 });
     const margin: Margin = { top: 20, right: 20, bottom: 100, left: 100 };
     const onResize = useDebounceCallback((size: ComponentSize) => setSize(size), 200)
-    const [selectedWavelength, setSelectedWavelength] = useState<number | null>(null);
 
     useResizeObserver({ ref: wavelengthRef, onResize });
     
@@ -66,7 +65,7 @@ export default function WavelengthPlot({theme, onWavelengthSelect, selectedPatie
         const svg = d3.select('#wavelength-svg')
         svg.selectAll("*").remove();
         initWavelength();
-    }, [wavelengthData, size, selectedWavelength, selectedPatientId])
+    }, [wavelengthData, size, setSelectedWavelength, selectedPatientId])
 
     // Initialize wavelength series plot
     function initWavelength() {
@@ -321,9 +320,6 @@ export default function WavelengthPlot({theme, onWavelengthSelect, selectedPatie
 
             tooltip.style("display", "none");
 
-            if (onWavelengthSelect) {
-                onWavelengthSelect(xValue);
-            }
             setSelectedWavelength(xValue);
             });
 
