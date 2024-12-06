@@ -31,6 +31,7 @@ function Layout() {
   const theme = useTheme();
   const [selectedWavelength, setSelectedWavelength] = useState<number | null>(null);
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const [selectedLineRing, setSelectedLineRing] = useState<{line: number; ring: number} | null>(null)
 
   return (
     <div>
@@ -51,12 +52,20 @@ function Layout() {
         <Grid container item direction='row' xs={6} sm={6} md={6} lg={6} sx={{ height: '100%' }}>
           <Grid item xs={8} className="plot" sx={{ height: '100%' }}>
               <div style={{ width: '100%', height: '100%'}}> 
-                <WavelengthPlot theme={theme} setSelectedWavelength={setSelectedWavelength} selectedPatientId={selectedPatientId}/>
+                <WavelengthPlot 
+                theme={theme}
+                setSelectedWavelength={setSelectedWavelength}
+                selectedPatientId={selectedPatientId}
+                selectedLineRing={selectedLineRing}
+                />
               </div> 
           </Grid>
           <Grid item xs={4} className="plot" sx={{ height: '100%' }}>
               <div style={{ width: '100%', height: '100%'}}> 
-                <Heatmap theme={theme} selectedWavelength={selectedWavelength} selectedPatientId={selectedPatientId}/>
+                <Heatmap theme={theme} 
+                selectedWavelength={selectedWavelength} 
+                selectedPatientId={selectedPatientId}
+                setSelectedLineRing={setSelectedLineRing}/>
               </div> 
           </Grid>
         </Grid>

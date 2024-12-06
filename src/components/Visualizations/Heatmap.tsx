@@ -22,10 +22,11 @@ interface Wavelength {
 interface InputProps {
     selectedWavelength?: (color: number | null) => void;
     selectedPatientId?: (color: string | null) => void;
+    setSelectedLineRing: ({line: number; ring: number} | null);
     theme: any;
 }
 
-export default function Heatmap({ theme, selectedWavelength, selectedPatientId }: InputProps) {
+export default function Heatmap({ theme, selectedWavelength, selectedPatientId, setSelectedLineRing }: InputProps) {
     
     // Initialize use states
     const [heatmapData, setHeatmap] = useState<Wavelength[]>([]);
@@ -164,6 +165,7 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId }
                 tooltip.style("visibility", "visible");
                 const tooltipContent = `Line: ${d.line < 5 ? d.line : d.line - 4}, Ring: ${d.line < 5 ? d.ring : 51 - d.ring}, Intensity: ${d.intensity.toFixed(1)}`;
                 tooltipText.text(tooltipContent);
+                d.line < 5 ? setSelectedLineRing({ line: d.line, ring: d.ring }) : setSelectedLineRing({line: d.line - 4, ring: 51-d.ring});
         
                 // Get the bounding box of the text for the rectangle
                 const bbox = tooltipText.node().getBBox();
@@ -181,6 +183,7 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId }
             .on("mouseout", function () {
                 // Hide tooltip when the mouse leaves
                 tooltip.style("visibility", "hidden");
+                setSelectedLineRing(null);
             });
 
         // Add label for each line

@@ -13,6 +13,8 @@ import simplify from 'simplify-js'
 interface Wavelength {
     id: string | number;
     patient: string;
+    line: number;
+    ring: number;
     series: {
         wavelength: number;
         intensity: number;
@@ -22,10 +24,11 @@ interface Wavelength {
 interface InputProps {
     setSelectedWavelength?: (color: number | null) => void;
     selectedPatientId?: (color: string | null) => void;
+    selectedLineRing?: ({line: number; ring: number} | null);
     theme: any;
 }
 
-export default function WavelengthPlot({theme, setSelectedWavelength, selectedPatientId}:  InputProps) {
+export default function WavelengthPlot({theme, setSelectedWavelength, selectedPatientId, selectedLineRing}:  InputProps) {
     
     // Initialize use states
     const [wavelengthData, setWavelength] = useState<Wavelength[]>([]);
@@ -49,7 +52,6 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
             try {
                 const processedData = await processCSVData('../../data/combined_spectra_data.csv');
                 setWavelength(processedData);
-                console.log('processed data:',processedData)
             } catch (error) {
                 console.error('Error in data loading and simplification:', error);
             }
@@ -65,7 +67,7 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
         const svg = d3.select('#wavelength-svg')
         svg.selectAll("*").remove();
         initWavelength();
-    }, [wavelengthData, size, setSelectedWavelength, selectedPatientId])
+    }, [wavelengthData, size, setSelectedWavelength, selectedPatientId, selectedLineRing])
 
     // Initialize wavelength series plot
     function initWavelength() {
@@ -99,6 +101,8 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
                 .map(d => ({
                     id: d.id,
                     patient: d.patient,
+                    line: d.line,
+                    ring: d.ring,
                     series: d.series.map(point => ({
                         wavelength: point.wavelength,
                         intensity: point.intensity
@@ -150,14 +154,23 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
             .attr("clip-path", "url(#clip)");
 
         // Add wavelength lines for each patient
-        wavelengthGroup.selectAll('.wavelength-line')
-            .data(filteredData)
-            .join('path')
-            .attr('class', 'wavelength-line')
-            .attr('d', d => lineGenerator(d.series)!)
-            .attr('fill', 'none')
-            .attr('stroke', (d, i) => color.range()[i % 9])
-            .attr('stroke-width', 1.5);
+            wavelengthGroup.selectAll('.wavelength-line')
+                .data(filteredData)
+                .join('path')
+                .attr('class', 'wavelength-line')
+                .attr('d', d => lineGenerator(d.series)!)
+                .attr('fill', 'none')
+                .attr('stroke', (d, i) => color.range()[i % 9])
+                .attr('stroke-width', 1.5);
+        
+        if (selectedLineRing === null) {
+            wavelengthGroup.selectAll('.wavelength-line')
+                .attr('stroke', (d, i) => color.range()[i % 9])
+                .attr('opacity', 1)
+        } else {
+            wavelengthGroup.selectAll('.wavelength-line')
+                .attr('opacity', (d) => (d.line === selectedLineRing.line && d.ring === selectedLineRing.ring) ? 1 : 0)
+        }
 
         // Add axis titles
         const xAxisTitle = svg.append("g")
@@ -218,7 +231,7 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
         const plotTitle = svg.append("g")
             .append("text")
             .text("Raman Spectra of Selected Patient")
-            .attr('transform', `translate(${width/2 - margin.right},${0})`)
+            .attr('transform', `translate(${width/2 - margin.right - 50},${0})`)
             .attr('fill', 'white')
             .attr('font-weight', 'bold')
 
