@@ -264,8 +264,8 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId }
 
         // Choose values of gradient
         const numStops = 10;
-        const step = (maxIntensityAtWavelength - minIntensityAtWavelength) / (numStops - 1);
-        const intensityRange = d3.range(minIntensityAtWavelength, maxIntensityAtWavelength + step, step);
+        const step = (maxIntensity - minIntensity) / (numStops - 1);
+        const intensityRange = d3.range(minIntensity, maxIntensity + step, step);
 
         intensityRange.forEach((intensity, i) => {
             gradient.append("stop")
@@ -283,7 +283,7 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId }
 
         // Add axis to indicate values
         const yScale = d3.scaleLinear()
-            .domain([maxIntensityAtWavelength, minIntensityAtWavelength])
+            .domain([maxIntensity, minIntensity])
             .range([-40, 110]);
 
         const axisRight = d3.axisRight(yScale)
@@ -300,7 +300,7 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId }
         // Display minimum and maximum values
         const minIntensityDisplay = svg.append("g")
             .append("text")
-            .text(minIntensityAtWavelength.toFixed(2))
+            .text(minIntensity.toFixed(2))
             .attr('fill', 'white')
             .attr('text-anchor', 'center')
             .attr('y', 130)
@@ -309,10 +309,10 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId }
 
         const maxIntensityDisplay = svg.append("g")
             .append("text")
-            .text(maxIntensityAtWavelength.toFixed(2))
+            .text(maxIntensity.toFixed(2))
             .attr('fill', 'white')
             .attr('text-anchor', 'center')
-            .attr('y', -50)
+            .attr('y', -50 )
             .attr('x', 205)
             .attr("font-size", "12px")
 
