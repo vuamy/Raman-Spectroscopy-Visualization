@@ -4,8 +4,22 @@ Developers **Amy Vu** and **Yifei Gu**
 
 ## Visual Tools
 1. ***Sankey diagram*** to visualize spread of metadata across current patient sample.
-2. ***Wavelength series plot*** of intensity over varying wavelengths per patient and measurement sample location.
-3. ***Heatmap*** indicating the spatial variance of a single patient
+2. ***Scatter Plot*** to visualize all patients based on stage, BMI, and age.
+3. ***Wavelength series plot*** of intensity over varying wavelengths per patient and measurement sample location.
+4. ***Heatmap*** indicating the spatial variance of a single patient
+
+## Interactions
+1. Hover over Sankey paths to view connected nodes and count.
+2. Click on Sankey noddes to highlight connected paths.
+3. Zoom in or out of Sankey plot to focus on smaller nodes and paths. Includes reset button.
+4. Hover over data points in Scatter Plot to view all patient information.
+5. Filter patients in Scatter Plot so that only those with spectra data is shown.
+6. Click on patient in Scatter Plot to show their data in the Wavelength and Heatmap plot.
+7. Hover over Wavelength plot to view exact wavelength and intensity values at that point.
+8. Edit the range of Wavelength plot shown by dragging the slider.
+9. Click on any point of Wavelength plot to display the heatmap of that patient's intensity variance of that wavelength value. Also allows for dragging to smoothly see the heatmap shift.
+10. Gradient min and max values in Heatmap dynamically change based on patients min and max intensities.
+11. Hover over any point in Heatmap to see the line, ring, and intensity values. Also updates the Wavelength plot so that only the associated spectra is displayed.
 
 ## Running Locally
 Clone program and install all depencies by running these lines in your terminal:
