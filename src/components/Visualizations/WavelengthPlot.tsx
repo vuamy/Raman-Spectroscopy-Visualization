@@ -246,14 +246,41 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
             .style("opacity", 0);
 
         const selectWavelength = svg.append("line")
-            .attr("stroke", "lightblue")
-            .attr("stroke-width", 3)
-            .style("opacity", 0);
-        
-        const wavelengthText = svg.append("g")
-            .append("text")
-            .style('font-size', "12px")
-            .style('fill', "lightblue")
+            .attr("stroke", "gray")
+            .attr("stroke-width", 2)
+            .style("opacity", 0)
+            .attr("y1", 0)
+            .attr("y2", height);
+
+        // Define drag behavior
+        const drag = d3.drag()
+        .on("start", (event) => {
+            selectWavelength.style("opacity", 0.7);
+        })
+        .on("drag", (event) => {
+            const mouseX = event.x;
+            const xValue = xScale.invert(mouseX);
+
+            // Constrain drag within bounds
+            if (mouseX >= margin.left && mouseX <= width - margin.right) {
+                selectWavelength
+                    .attr("x1", mouseX)
+                    .attr("x2", mouseX);
+
+                // Update selectedWavelength value
+                setSelectedWavelength(xValue);
+
+                // Optionally, update the tooltip to reflect current value
+                tooltip
+                    .style("display", "block")
+                    .style("left", `${event.sourceEvent.pageX + 10}px`)
+                    .style("top", `${event.sourceEvent.pageY - 10}px`)
+                    .html(`Wavelength: ${xValue.toFixed(0)}`);
+            }
+        })
+        .on("end", () => {
+            tooltip.style("display", "none");
+        });
 
         // Control mouse events with overlay    
         svg.append("rect")
@@ -264,6 +291,7 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
             .attr("height", height)
             .attr("fill", "none")
             .attr("pointer-events", "all")
+            .call(drag)
             .on("mouseover", () => {
             tooltip.style("display", "block");
             verticalLine.style("opacity", 0.2);
@@ -307,16 +335,12 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
             .on("click", (event) => {
             const [mouseX] = d3.pointer(event);
             const xValue = xScale.invert(mouseX);
-            selectWavelength.style("opacity", 1);
+            selectWavelength.style("opacity", 0.7);
             selectWavelength
                 .attr("x1", mouseX)
                 .attr("x2", mouseX)
                 .attr("y1", 0)
                 .attr("y2", height);
-            wavelengthText
-                .text(xValue.toFixed(0))
-                .attr('x', mouseX - 10)
-                .attr('y', -10);
 
             tooltip.style("display", "none");
 

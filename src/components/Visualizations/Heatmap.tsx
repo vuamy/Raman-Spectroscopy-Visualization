@@ -245,6 +245,77 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId }
             .attr("padding", 0)
             .style("font-size", "10px")
             .style("font-family", "Arial, sans-serif");
+
+        // Find minimum and maximum at wavelength
+        const allIntensitiesAtWavelength = filteredData.flatMap(d => d.intensity);
+        const minIntensityAtWavelength = d3.min(allIntensitiesAtWavelength) ?? 0;
+        const maxIntensityAtWavelength = d3.max(allIntensitiesAtWavelength) ?? 0;
+
+        // Append a defs element to hold the gradient
+        const defs = svg.append("defs");
+
+        // Define the vertical linear gradient
+        const gradient = defs.append("linearGradient")
+            .attr("id", "heatmap-gradient")
+            .attr("x1", "0%")
+            .attr("y1", "100%")
+            .attr("x2", "0%")
+            .attr("y2", "0%");
+
+        // Choose values of gradient
+        const numStops = 10;
+        const step = (maxIntensityAtWavelength - minIntensityAtWavelength) / (numStops - 1);
+        const intensityRange = d3.range(minIntensityAtWavelength, maxIntensityAtWavelength + step, step);
+
+        intensityRange.forEach((intensity, i) => {
+            gradient.append("stop")
+                .attr("offset", `${(i / (numStops - 1)) * 100}%`)
+                .attr("stop-color", colorScale(intensity));
+        });
+
+        // Add a gradient rectangle
+        svg.append("rect")
+            .attr("x", 210)
+            .attr("y", -40)
+            .attr("width", 20)
+            .attr("height", 150)
+            .style("fill", "url(#heatmap-gradient)");
+
+        // Add axis to indicate values
+        const yScale = d3.scaleLinear()
+            .domain([maxIntensityAtWavelength, minIntensityAtWavelength])
+            .range([-40, 110]);
+
+        const axisRight = d3.axisRight(yScale)
+            .ticks(5)
+
+        const axisGroup = svg.append("g")
+            .attr("transform", "translate(230, 0)") // Position to the right of the rectangle
+            .call(axisRight);
+
+        // Smaller font size
+        axisGroup.selectAll(".tick text")
+            .style("font-size", "8px")
+
+        // Display minimum and maximum values
+        const minIntensityDisplay = svg.append("g")
+            .append("text")
+            .text(minIntensityAtWavelength.toFixed(2))
+            .attr('fill', 'white')
+            .attr('text-anchor', 'center')
+            .attr('y', 130)
+            .attr('x', 205)
+            .attr("font-size", "12px")
+
+        const maxIntensityDisplay = svg.append("g")
+            .append("text")
+            .text(maxIntensityAtWavelength.toFixed(2))
+            .attr('fill', 'white')
+            .attr('text-anchor', 'center')
+            .attr('y', -50)
+            .attr('x', 205)
+            .attr("font-size", "12px")
+
     }
 
     return (
