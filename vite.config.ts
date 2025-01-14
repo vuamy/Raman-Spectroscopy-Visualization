@@ -7,4 +7,8 @@ export default defineConfig({
     port: 3000,
   },
   plugins: [react()],
+  base: '/your-repo-name/', // Replace 'your-repo-name' with the repository name.
+  build: {
+    outDir: 'dist',
+  },
 })
