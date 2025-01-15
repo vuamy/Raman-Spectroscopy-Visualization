@@ -40,9 +40,10 @@ type SankeyNode = {
 };
 
 type SankeyLink = {
-    source: string | number;
-    target: string | number;
+    source: SankeyNode;
+    target: SankeyNode;
     value: number;
+    width: number;
     dy?: number;
 };
 
@@ -154,18 +155,38 @@ export default function SankeyPlot({ theme }: { theme: Theme })  { // Import das
                     d => d[nextLevel]
                 );
                 flows.forEach(([source, targets]) => {
+                    // Find the actual node object for the source
+                    const sourceNode = nodes.find(node => node.id === source);
+                    if (!sourceNode) {
+                        console.error("Missing source node for id:", source);
+                        return;
+                    }
+            
                     targets.forEach(([target, value]) => {
-                        links.push({ source, target, value });
+                        // Find the actual node object for the target
+                        const targetNode = nodes.find(node => node.id === target);
+                        if (!targetNode) {
+                            console.error("Missing target node for id:", target);
+                            return;
+                        }
+            
+                        // Add a link from sourceNode to targetNode with the specified value
+                        links.push({
+                            source: sourceNode,  // Link to the actual source node
+                            target: targetNode,  // Link to the actual target node
+                            value: value,         // The flow value between the nodes
+                            width: 0
+                        });
                     });
                 });
             }
 
             links.forEach(link => {
-                if (!nodes.some(node => node.id === link.source)) {
-                    console.error("Missing node for source:", link.source);
+                if (!nodes.some(node => node.id === link.source.id)) {
+                    console.error("Missing node for source:", link.source.id);
                 }
-                if (!nodes.some(node => node.id === link.target)) {
-                    console.error("Missing node for target:", link.target);
+                if (!nodes.some(node => node.id === link.target.id)) {
+                    console.error("Missing node for target:", link.target.id);
                 }
             });
 
@@ -221,13 +242,13 @@ export default function SankeyPlot({ theme }: { theme: Theme })  { // Import das
         const nodeIndexMap = new Map(sankeyData.nodes.map((node, index) => [node.id, index]));
 
         sankeyData.links.forEach(link => {
-            const sourceIndex = nodeIndexMap.get(link.source);
-            const targetIndex = nodeIndexMap.get(link.target);
+            const sourceIndex = nodeIndexMap.get(link.source.id);
+            const targetIndex = nodeIndexMap.get(link.target.id);
             
             // Removes undefined indexes or circular links
             if ((sourceIndex !== undefined && targetIndex !== undefined) && (sourceIndex !== targetIndex)) {
-                link.source = sourceIndex;
-                link.target = targetIndex;
+                link.source.id = sourceIndex;
+                link.target.id = targetIndex;
             } else {
                 // Handle invalid links
                 console.error(`Invalid link detected: ${link.source} -> ${link.target}`);
@@ -248,15 +269,15 @@ export default function SankeyPlot({ theme }: { theme: Theme })  { // Import das
 
         // Create sankey links
         const sankeyLinks = zoomableGroup.selectAll(".link")
-        .data(graph.links)
-        .enter()
-        .append("path")
-        .attr("class", "link")
-        .attr("d", sankeyLinkHorizontal())
-        .style("fill", "none") // Ensure no fill for paths
-        .style("stroke", d => color(d.source as string)) // Use your color function
-        .style("stroke-width", d => Math.max(1, ((d.width ?? 0 + 2)|| 0)))
-        .style("opacity", 0.7)
+            .data(graph.links as SankeyLink[])
+            .enter()
+            .append("path")
+            .attr("class", "link")
+            .attr("d", sankeyLinkHorizontal())  
+            .style("fill", "none") // Ensure no fill for paths
+            .style("stroke", d => color(d.source.id as string)) // Use your color function
+            .style("stroke-width", d => Math.max(1, ((d.width ?? 0 + 2)|| 0)))
+            .style("opacity", 0.7)
 
         // Create sankey nodes 
         const sankeyNodes = zoomableGroup.selectAll()
@@ -280,7 +301,7 @@ export default function SankeyPlot({ theme }: { theme: Theme })  { // Import das
             .attr("text-anchor", "start")
             .attr("fill", "white")
             .attr("font-size", "12px")
-            .text(d => d.id as string)
+            .text(d => d.name as string)
             .style("pointer-events", "none");
 
         // Get column info for each attribute
@@ -322,10 +343,10 @@ export default function SankeyPlot({ theme }: { theme: Theme })  { // Import das
         let isHighlighted = false;
 
         // Track the currently highlighted node
-        let currentHighlightedNode = null;
+        let currentHighlightedNode: string | number | null = null;
 
         // Helper function to handle highlighting on click
-        function handleNodeClick(node: SankeyNode[]) {
+        function handleNodeClick(node: SankeyNode) {
 
             if (currentHighlightedNode === node.id) {
 
@@ -337,7 +358,7 @@ export default function SankeyPlot({ theme }: { theme: Theme })  { // Import das
                     .transition()
                     .duration(500)
                     .style("stroke-opacity", 0.9)
-                    .style("stroke", d => color(d.source.id));
+                    .style("stroke", d => color(d.source.id as string));
                 sankeyNodes
                     .transition()
                     .duration(500)
@@ -404,7 +425,7 @@ export default function SankeyPlot({ theme }: { theme: Theme })  { // Import das
                 tooltip.style("visibility", "visible");
                 const tooltipContent = `${d.source.id} → ${d.target.id}\n, Count: ${d.value}`;
                 tooltipText.text(tooltipContent);
-                const bbox = tooltipText.node().getBBox();
+                const bbox = tooltipText.node()?.getBBox() || { width: 0, height: 0, x: 0, y: 0 };
 
                 tooltipRect
                     .attr("width", bbox.width + 10) 
@@ -490,13 +511,13 @@ export default function SankeyPlot({ theme }: { theme: Theme })  { // Import das
         svg.call(zoom).on("wheel.zoom", null);
 
         // Zoom function to handle update of sankeyContainer
-        function zoomed(event) {
+        function zoomed(event: { transform: string | number | boolean | readonly (string | number)[] | d3.ValueFn<SVGGElement, unknown, string | number | boolean | readonly (string | number)[] | null> | null; }) {
             zoomableGroup.attr("transform", event.transform);
         }
 
         // Handle zoom in
         zoomInText.on("click", function() {
-            const currentTransform = d3.zoomTransform(zoomableGroup.node());
+            const currentTransform = d3.zoomTransform(zoomableGroup.node() as Element);
             console.log(currentTransform)
             const newZoomLevel = Math.min(currentTransform.k * 1.2, maxZoom);
             const newTransform = d3.zoomIdentity.translate(currentTransform.x, currentTransform.y).scale(newZoomLevel);
@@ -505,10 +526,13 @@ export default function SankeyPlot({ theme }: { theme: Theme })  { // Import das
 
         // Handle zoom out
         zoomOutText.on("click", function() {
-            const currentTransform = d3.zoomTransform(zoomableGroup.node());
-            const newZoomLevel = Math.max(currentTransform.k / 1.2, minZoom);
-            const newTransform = d3.zoomIdentity.translate(currentTransform.x, currentTransform.y).scale(newZoomLevel);
-            svg.transition().duration(250).call(zoom.transform, newTransform);
+            const node = zoomableGroup.node();
+            if (node instanceof Element) {
+                const currentTransform = d3.zoomTransform(node);
+                const newZoomLevel = Math.max(currentTransform.k * 1.2, maxZoom);
+                const newTransform = d3.zoomIdentity.translate(currentTransform.x, currentTransform.y).scale(newZoomLevel);
+                svg.transition().duration(250).call(zoom.transform, newTransform);
+            }
         });
 
         // Handle reset zoom
