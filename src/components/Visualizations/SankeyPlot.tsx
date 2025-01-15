@@ -387,8 +387,8 @@ export default function SankeyPlot({ theme }: { theme: Theme })  { // Import das
                     .duration(500)
                     .style("opacity", d =>
                         d.id === node.id || graph.links.some(link => 
-                            (link.source.id === node.id && link.target.id === d.id) ||
-                            (link.target.id === node.id && link.source.id === d.id)
+                            ((link.source as SankeyNode).id === node.id && (link.target as SankeyNode).id === d.id) ||
+                            ((link.target as SankeyNode).id === node.id && (link.source as SankeyNode).id === d.id)
                         ) ? 1 : 0.1);
 
             }
