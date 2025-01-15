@@ -109,8 +109,9 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
                     })) 
                 }));
         };
+
+        const filteredData = selectedPatientId && typeof selectedPatientId === 'string' ? filterDataByPatient(wavelengthData, selectedPatientId) : [];
         console.log('Selected patient:', selectedPatientId)
-        const filteredData = filterDataByPatient(wavelengthData, selectedPatientId);
         console.log('Filtered data:', filteredData)
         
         // Create scales
@@ -169,7 +170,7 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
                 .attr('opacity', 1)
         } else {
             wavelengthGroup.selectAll('.wavelength-line')
-                .attr('opacity', (d) => (d.line === selectedLineRing.line && d.ring === selectedLineRing.ring) ? 1 : 0)
+                .attr('opacity', (d: Wavelength) => (d.line === selectedLineRing?.line && d.ring === selectedLineRing?.ring) ? 1 : 0)
         }
 
         // Add axis titles
@@ -190,7 +191,7 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
         // Define wavelength slider
         const sliderScale = d3.scaleLinear()
             .domain([xMin, xMax])
-            .range([margin.left, width-margin.right])
+            .range([margin.left, width-margin.right]);
             
         const slider = sliderBottom(sliderScale)
             .ticks(10)
@@ -199,14 +200,14 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
             .handle(d3.symbol().type(d3.symbolCircle).size(200)())
             .on('onchange', ([min, max]: [number, number]) => {
                 xScale.domain([min, max]);
-                svg.select('.x-axis').call(d3.axisBottom(xScale));
+                (svg.select('.x-axis') as unknown as d3.Selection<SVGGElement, unknown, null, undefined>).call(d3.axisBottom(xScale));
                 
                 // Update the lines without redrawing the whole plot
                 wavelengthGroup.selectAll('.wavelength-line')
                     .transition()
                     .duration(500)
-                    .attr('d', d => lineGenerator(d.series));  // Smooth transition
-            })
+                    .attr('d', (d: Wavelength) => lineGenerator(d.series));  // Smooth transition
+            });
 
         // Add to slider container
         const sliderContainer = svg.append("g")
@@ -281,7 +282,9 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
                     .attr("x2", mouseX);
 
                 // Update selectedWavelength value
-                setSelectedWavelength(xValue);
+                if (setSelectedWavelength) {
+                    setSelectedWavelength(xValue);
+                }
 
                 // Optionally, update the tooltip to reflect current value
                 tooltip
@@ -357,7 +360,9 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
 
             tooltip.style("display", "none");
 
-            setSelectedWavelength(xValue);
+                if (setSelectedWavelength) {
+        setSelectedWavelength(xValue);
+    }
             });
 
     }
