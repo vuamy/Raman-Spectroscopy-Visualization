@@ -33,7 +33,7 @@ interface ScatterPlotProps {
   }
 
 
-export default function ScatterPlot( {setSelectedPatientId, setSelectedWavelength}: ScatterPlotProps) {
+export default function ScatterPlot() {
   const [data, setData] = useState<DataPoint[]>([]);
   const scatterRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<ComponentSize>({ width: 0, height: 0 });
@@ -180,11 +180,6 @@ export default function ScatterPlot( {setSelectedPatientId, setSelectedWavelengt
                 // Reset all circle opacities
                 d3.selectAll('circle')
                   .attr('opacity', (d: DataPoint) => (highlightedPos && d.pos === 'Yes' ? 1 : highlightedPos ? 0.2 : 0.8));
-                
-                // Set selectedPatientId to null
-                selectedPatientId = null;
-                setSelectedPatientId(null);
-                setSelectedWavelength(0)
             } else {
                 // Select a new patient
                 d3.selectAll('circle')
@@ -196,10 +191,6 @@ export default function ScatterPlot( {setSelectedPatientId, setSelectedWavelengt
                   .attr('opacity', 1)
                   .attr('stroke', 'yellow')
                   .attr('stroke-width', 2);
-                
-                // Update selectedPatientId
-                selectedPatientId = d.id;
-                setSelectedPatientId(d.id);
                 
                 
             }
