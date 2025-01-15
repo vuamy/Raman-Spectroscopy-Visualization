@@ -5,14 +5,15 @@ import { sankey, sankeyLinkHorizontal } from 'd3-sankey';
 import { isEmpty } from 'lodash';
 import { useResizeObserver, useDebounceCallback } from 'usehooks-ts';
 import { ComponentSize, Margin } from '../../types';
-import { MarginOutlined } from '@mui/icons-material';
+import { Theme } from '@mui/material/styles';
+
 
 // Constructing interfaces and types
 
 interface Sankey {
     id: string | number,
     gender: string,
-    age: number,
+    age: string,
     race: string,
     ethnicity: boolean | string,
     bmi: string,
@@ -45,7 +46,7 @@ type SankeyLink = {
     dy?: number;
 };
 
-export default function SankeyPlot( {theme} ) { // Import dashboard theme
+export default function SankeyPlot({ theme }: { theme: Theme })  { // Import dashboard theme
 
     // Initialize use states
     const [sankeyData, setSankey] = useState<SankeyData>({ nodes: [], links: [] });
@@ -253,25 +254,25 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
         .attr("class", "link")
         .attr("d", sankeyLinkHorizontal())
         .style("fill", "none") // Ensure no fill for paths
-        .style("stroke", d => color(d.source.id)) // Use your color function
-        .style("stroke-width", d => Math.max(1, (d.width + 2|| 0)))
+        .style("stroke", d => color(d.source as string)) // Use your color function
+        .style("stroke-width", d => Math.max(1, ((d.width ?? 0 + 2)|| 0)))
         .style("opacity", 0.7)
 
         // Create sankey nodes 
         const sankeyNodes = zoomableGroup.selectAll()
-            .data(graph.nodes)
+            .data(graph.nodes as SankeyNode[])
             .join("rect")
             .attr("x", d => d.x0 as number)
             .attr("y", d => d.y0 as number - 1)
             .attr("height", d => d.y1 as number - (d.y0 as number) + 2)
             .attr("width", d => d.x1 as number - (d.x0 as number) + 30)
-            .attr("fill", d => color(d.id)) // Flagged for error but it works
+            .attr("fill", d => color(d.id as string)) // Flagged for error but it works
             .on("click", (_, node) => handleNodeClick(node)) // Highlighting
             .attr("cursor", "pointer")
 
         // Create node labels
         const sankeyLabels = zoomableGroup.selectAll()
-            .data(graph.nodes)
+            .data(graph.nodes as SankeyNode[])
             .join("text")
             .attr("x", d => (d.x0 as number))
             .attr("y", d => (d.y0 as number))
@@ -279,7 +280,7 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
             .attr("text-anchor", "start")
             .attr("fill", "white")
             .attr("font-size", "12px")
-            .text(d => d.id)
+            .text(d => d.id as string)
             .style("pointer-events", "none");
 
         // Get column info for each attribute
@@ -324,7 +325,7 @@ export default function SankeyPlot( {theme} ) { // Import dashboard theme
         let currentHighlightedNode = null;
 
         // Helper function to handle highlighting on click
-        function handleNodeClick(node) {
+        function handleNodeClick(node: SankeyNode[]) {
 
             if (currentHighlightedNode === node.id) {
 

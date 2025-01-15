@@ -149,7 +149,7 @@ export default function ScatterPlot( {setSelectedPatientId, setSelectedWavelengt
       .attr('cx', d => xScale(d.age))
       .attr('cy', d => yScale(d.bmi))
       .attr('r', 5)
-      .attr('fill', d => colorScale(d.stage))
+      .attr('fill', d => colorScale(d.stage) as string)
       .attr('stroke', 'black')
       .attr('stroke-width', 0.5)
       .style('display', d => (highlightedPos && d.pos === 'No' ? 'none' : 'block')) // Hide points based on toggle
@@ -201,6 +201,7 @@ export default function ScatterPlot( {setSelectedPatientId, setSelectedWavelengt
                 selectedPatientId = d.id;
                 setSelectedPatientId(d.id);
                 
+                
             }
         }
     });
@@ -218,7 +219,7 @@ export default function ScatterPlot( {setSelectedPatientId, setSelectedWavelengt
         .attr('width', 15)
         .attr('height', 15)
         .attr( 'opacity', 0.9)
-        .attr('fill', colorScale);
+        .attr('fill', d => colorScale(d) as string);
 
     legendGroups.append('text')
         .text(d => d)
@@ -243,11 +244,11 @@ export default function ScatterPlot( {setSelectedPatientId, setSelectedWavelengt
 
       // Mean age line
       chartContainer.append('line')
-      .attr('x1', xScale(meanAge))
-      .attr('x2', xScale(meanAge))
+      .attr('x1', xScale(meanAge as number))
+      .attr('x2', xScale(meanAge as number))
       .attr('y1', margin.top +30)
       .attr('y2', size.height - margin.bottom)
-      .attr('stroke', color)
+      .attr('stroke', color as string)
       .attr('stroke-width', 2)
       .attr('stroke-dasharray', '4 4');
 
@@ -255,9 +256,9 @@ export default function ScatterPlot( {setSelectedPatientId, setSelectedWavelengt
       chartContainer.append('line')
       .attr('x1', margin.left)
       .attr('x2', size.width - margin.right)
-      .attr('y1', yScale(meanBmi))
-      .attr('y2', yScale(meanBmi))
-      .attr('stroke', color)
+      .attr('y1', yScale(meanBmi as number))
+      .attr('y2', yScale(meanBmi as number))
+      .attr('stroke', color as string)
       .attr('stroke-width', 2)
       .attr('stroke-dasharray', '4 4');
       });

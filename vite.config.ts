@@ -7,8 +7,4 @@ export default defineConfig({
     port: 3000,
   },
   plugins: [react()],
-  base: '/Raman-Spectroscopy-Visualization/', // Replace 'your-repo-name' with the repository name.
-  build: {
-    outDir: 'dist',
-  },
 })
