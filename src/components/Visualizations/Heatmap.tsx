@@ -20,9 +20,9 @@ interface Wavelength {
 }
 
 interface InputProps {
-    selectedWavelength?: (color: number | null) => void;
-    selectedPatientId?: (color: string | null) => void;
-    setSelectedLineRing: ({line: number; ring: number} | null);
+    selectedWavelength?: number | null;
+    selectedPatientId?: string | null;
+    setSelectedLineRing: ((lineRing: {line: number; ring: number} | null) => void) | null;
     theme: any;
 }
 
@@ -126,7 +126,7 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId, 
         
         // Create line angle scale
         const angleScale = d3.scaleBand()
-            .domain([1, 2, 3, 4, 5, 6, 7, 8])
+            .domain(['1', '2', '3', '4', '5', '6', '7', '8'])
             .range([0, 2 * Math.PI])
             .padding(0);
 
@@ -156,7 +156,12 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId, 
                 .startAngle(startAngle)
                 .endAngle(endAngle);
                 
-                return arc();
+                return arc({
+                    innerRadius: innerRadius,
+                    outerRadius: outerRadius,
+                    startAngle: startAngle,
+                    endAngle: endAngle
+                });
             })
             .attr("fill", d => colorScale(d.intensity))
             .attr("stroke", "black")
@@ -165,15 +170,17 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId, 
                 tooltip.style("visibility", "visible");
                 const tooltipContent = `Line: ${d.line < 5 ? d.line : d.line - 4}, Ring: ${d.line < 5 ? d.ring : 51 - d.ring}, Intensity: ${d.intensity.toFixed(1)}`;
                 tooltipText.text(tooltipContent);
-                d.line < 5 ? setSelectedLineRing({ line: d.line, ring: d.ring }) : setSelectedLineRing({line: d.line - 4, ring: 51-d.ring});
+                if (setSelectedLineRing) {
+                    d.line < 5 ? setSelectedLineRing({ line: d.line, ring: d.ring }) : setSelectedLineRing({line: d.line - 4, ring: 51-d.ring});
+                }
         
                 // Get the bounding box of the text for the rectangle
-                const bbox = tooltipText.node().getBBox();
+                const bbox = tooltipText.node()?.getBBox();
                 tooltipRect
-                    .attr("width", bbox.width + 10)
-                    .attr("height", bbox.height + 5)
-                    .attr("x", bbox.x - 5)
-                    .attr("y", bbox.y - 2.5);
+                    .attr("width", bbox ? bbox.width + 10 : 0)
+                    .attr("height", bbox ? bbox.height + 5 : 0)
+                    .attr("x", bbox ? bbox.x - 5 : 0)
+                    .attr("y", bbox ? bbox.y - 2.5 : 0);
             })
             .on("mousemove", function (event) {
                 // Update tooltip position
@@ -183,20 +190,29 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId, 
             .on("mouseout", function () {
                 // Hide tooltip when the mouse leaves
                 tooltip.style("visibility", "hidden");
-                setSelectedLineRing(null);
+                if (setSelectedLineRing) {
+                    setSelectedLineRing(null);
+                }
             });
-
         // Add label for each line
         svg.selectAll(".line-label")
-            .data([1, 2, 3, 4, 5, 6, 7, 8]) // Assuming 4 lines
+            .data([1, 2, 3, 4, 5, 6, 7, 8])
             .join("text")
             .attr("class", "line-label")
-            .attr("x", d => (radius + 30) * Math.cos((angleScale(d) + 0.4) - Math.PI / 2))
-            .attr("y", d => (radius + 18) * Math.sin((angleScale(d) + 0.4) - Math.PI / 2))
+            .attr("x", d => {
+                const angle = angleScale(d);
+                // Ensure angle is defined and is a number
+                return typeof angle === "number" ? (radius + 30) * Math.cos((angle + 0.4) - Math.PI / 2) : 0;
+            })
+            .attr("y", d => {
+                const angle = angleScale(d);
+                // Ensure angle is defined and is a number
+                return typeof angle === "number" ? (radius + 18) * Math.sin((angle + 0.4) - Math.PI / 2) : 0;
+            })
             .attr("text-anchor", "middle")
-            .attr("font-size", 12)
+            .attr("font-size", "12px")  // Make sure to include px for font-size
             .attr("fill", "white")
-            .text(d => d < 5 ? `Line ${d}` : `Line ${d - 4}`)
+            .text(d => d < 5 ? `Line ${d}` : `Line ${d - 4}`);
 
         // Add plot title
         const plotTitle = svg.append("g")
@@ -219,7 +235,7 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId, 
         // Display wavelength value
         const wavelengthDisplay = svg.append("g")
             .append("text")
-            .text("Wavelength: " + (Number(selectedWavelength) > 0 ? selectedWavelength.toFixed(2) : 0))
+            .text("Wavelength: " + (Number(selectedWavelength ?? 0) > 0 ? (selectedWavelength ?? 0).toFixed(2) : 0))
             .attr('fill', 'white')
             .attr('y', -80)
             .attr('x', 170)
