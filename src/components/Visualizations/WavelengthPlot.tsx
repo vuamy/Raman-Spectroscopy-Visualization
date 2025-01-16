@@ -34,7 +34,7 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
     const [wavelengthData, setWavelength] = useState<Wavelength[]>([]);
     const wavelengthRef = useRef<HTMLDivElement>(null);
     const [size, setSize] = useState<ComponentSize>({ width: 0, height: 0 });
-    const margin: Margin = { top: 20, right: 20, bottom: 100, left: 100 };
+    const margin: Margin = { top: 20, right: 50, bottom: 100, left: 100 };
     const onResize = useDebounceCallback((size: ComponentSize) => setSize(size), 200)
     const [currentPatient, setCurrentPatient] = useState(0 as number);
 
@@ -206,7 +206,8 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
         const xAxisTitle = svg.append("g")
             .append("text")
             .text("Wavelength (nm)")
-            .attr('transform', `translate(${(-20)}, ${height + margin.bottom/2 - 10})`)
+            .attr('transform', `translate(${width / 2}, ${height + margin.bottom / 2 - 15})`)
+            .style('text-anchor', 'middle')
             .style('font-size', '.8rem')
             .style("fill", theme.palette.text.primary);
 
@@ -218,31 +219,31 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
             .style("fill", theme.palette.text.primary);
 
         // Define wavelength slider
-        const sliderScale = d3.scaleLinear()
-            .domain([xMin, xMax])
-            .range([margin.left, width-margin.right]);
+        // const sliderScale = d3.scaleLinear()
+        //     .domain([xMin, xMax])
+        //     .range([margin.left, width-margin.right]);
             
-        const slider = sliderBottom(sliderScale)
-            .ticks(10)
-            .on('onchange', (val: number) => {
-                xScale.domain([val, xMax]);
-                (svg.select('.x-axis') as unknown as d3.Selection<SVGGElement, unknown, null, undefined>).call(d3.axisBottom(xScale));
+        // const slider = sliderBottom(sliderScale)
+        //     .ticks(10)
+        //     .on('onchange', (val: number) => {
+        //         xScale.domain([val, xMax]);
+        //         (svg.select('.x-axis') as unknown as d3.Selection<SVGGElement, unknown, null, undefined>).call(d3.axisBottom(xScale));
                 
-                // Update the lines without redrawing the whole plot
-                wavelengthGroup.selectAll('.wavelength-line')
-                    .transition()
-                    .duration(500)
-                    .attr('d', (d: Wavelength) => lineGenerator(d.series));  // Smooth transition
-            });
+        //         // Update the lines without redrawing the whole plot
+        //         wavelengthGroup.selectAll('.wavelength-line')
+        //             .transition()
+        //             .duration(500)
+        //             .attr('d', (d: Wavelength) => lineGenerator(d.series));  // Smooth transition
+        //     });
 
         // Add to slider container
-        const sliderContainer = svg.append("g")
-            .attr("class", "slider")
-            .attr('width', 400)
-            .attr('height', 100)
-            .append('g')
-            .attr('transform', `translate(0,${height + margin.bottom - 65})`)
-            .call(slider);
+        // const sliderContainer = svg.append("g")
+        //     .attr("class", "slider")
+        //     .attr('width', 400)
+        //     .attr('height', 100)
+        //     .append('g')
+        //     .attr('transform', `translate(0,${height + margin.bottom - 65})`)
+        //     .call(slider);
 
         // Change visual display of slider
         svg.selectAll('.slider .tick text')
@@ -258,9 +259,10 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
         const plotTitle = svg.append("g")
             .append("text")
             .text("Raman Spectra of Selected Patient")
-            .attr('transform', `translate(${width/2 - margin.right - 50},${0})`)
+            .attr('transform', `translate(${width / 2},${-margin.top / 2})`)
             .attr('fill', 'white')
             .attr('font-weight', 'bold')
+            .style('text-anchor', 'middle')
 
         // Create tooltip for hovering over plot that shows coordinates
         const tooltip = d3.select("body")
