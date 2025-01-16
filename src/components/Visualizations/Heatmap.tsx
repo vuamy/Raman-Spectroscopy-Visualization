@@ -32,7 +32,7 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId, 
     const [heatmapData, setHeatmap] = useState<Wavelength[]>([]);
     const heatmapRef = useRef<HTMLDivElement>(null);
     const [size, setSize] = useState<ComponentSize>({ width: 0, height: 0 });
-    const margin: Margin = { top: 50, right: 20, bottom: 50, left: 20 };
+    const margin: Margin = { top: 100, right: 100, bottom: 100, left: 100 };
     const onResize = useDebounceCallback((size: ComponentSize) => setSize(size), 200)
 
     useResizeObserver({ ref: heatmapRef, onResize });
@@ -81,7 +81,7 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId, 
             .attr("width", size.width)
             .attr("height", size.height)
             .append("g")
-                .attr("transform", "translate(" + (width/2 - 50) + "," + (height/2 + 70) + ")");
+                .attr("transform", "translate(" + size.width/2 + "," + size.height/2 + ")");
 
         // Function to find matching intensity for selected patient
         const filterDataByPatient = (data: Wavelength[], targetPatient:string) => {
@@ -206,7 +206,7 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId, 
                     return typeof angle === "number" ? `${(radius + 30) * Math.cos((angle + 0.4) - Math.PI / 2)}` : "0";
                 })
                 .attr("y", d => {
-                    const angle = angleScale(d.toString()) as number;
+                    const angle = angleScale(d.toString()   ) as number;
                     // Ensure angle is defined and is a number
                     return typeof angle === "number" ? `${(radius + 18) * Math.sin((angle + 0.4) - Math.PI / 2)}` : "0";
                 })
@@ -219,10 +219,12 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId, 
         const plotTitle = svg.append("g")
             .append("text")
             .text("Spatial Variance of Selected Patient at Selected Wavelength")
+            .attr("font-size", "24px")
+            .attr("text-anchor", "middle")
             .attr("fill", "white")
             .attr("font-weight", "bold")
-            .attr("y", -160)
-            .attr("x", -150)
+            .attr("y", -height/2 - 50)
+            .attr("x", 0)
 
         // Display patient id number
         const patientIdDisplay = svg.append("g")
@@ -295,10 +297,10 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId, 
 
         // Add a gradient rectangle
         svg.append("rect")
-            .attr("x", 210)
-            .attr("y", -40)
-            .attr("width", 20)
-            .attr("height", 150)
+            .attr("x", 0)
+            .attr("y", -height/2)
+            .attr("width", 0)
+            .attr("height", 200)
             .style("fill", "url(#heatmap-gradient)");
 
         // Add axis to indicate values
