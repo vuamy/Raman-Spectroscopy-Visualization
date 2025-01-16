@@ -29,4 +29,4 @@ def convert_spectra_to_csv(input_folder, output_file):
     print(f"CSV file created at {output_file}")
 
 # Use the function to process files in 'data/spectra'
-convert_spectra_to_csv('spectra', 'combined_spectra_data.csv')
+convert_spectra_to_csv('data/downsized_spectra', 'combined_spectra_data.csv')
