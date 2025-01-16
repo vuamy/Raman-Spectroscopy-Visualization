@@ -7,5 +7,5 @@ export default defineConfig({
     port: 3000,
   },
   plugins: [react()],
-  base: "/raman-vis"
+  base: "/raman-deploy/"
 })
