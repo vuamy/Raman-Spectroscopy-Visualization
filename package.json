@@ -1,6 +1,6 @@
 {
   "name": "react-template",
-  "homepage": "https://vuamy.github.io/Raman-Spectroscopy-Visualization",
+  "homepage": "https://vuamy.github.io/raman-deploy",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -17,8 +17,8 @@
     "@emotion/styled": "^11.13.0",
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@fortawesome/react-fontawesome": "^0.2.2",
-    "@mui/icons-material": "^6.1.6",
-    "@mui/material": "^5.16.7",
+    "@mui/icons-material": "^6.4.0",
+    "@mui/material": "^6.4.0",
     "@types/d3": "^7.4.3",
     "@types/lodash": "^4.17.7",
     "axios": "^1.2.1",
