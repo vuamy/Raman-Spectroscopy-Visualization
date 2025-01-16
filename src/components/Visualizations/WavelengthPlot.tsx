@@ -36,6 +36,8 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
     const [size, setSize] = useState<ComponentSize>({ width: 0, height: 0 });
     const margin: Margin = { top: 20, right: 20, bottom: 100, left: 100 };
     const onResize = useDebounceCallback((size: ComponentSize) => setSize(size), 200)
+    const [currentPatient, setCurrentPatient] = useState(0 as number);
+
 
     useResizeObserver({ ref: wavelengthRef, onResize });
     
@@ -67,7 +69,7 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
         const svg = d3.select('#wavelength-svg')
         svg.selectAll("*").remove();
         initWavelength();
-    }, [wavelengthData, size, setSelectedWavelength, selectedPatientId, selectedLineRing])
+    }, [wavelengthData, size, setSelectedWavelength, selectedPatientId, selectedLineRing, currentPatient])
 
     // Initialize wavelength series plot
     function initWavelength() {
@@ -110,10 +112,37 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
                 }));
         };
 
-        const filteredData = selectedPatientId && typeof selectedPatientId === 'string' ? filterDataByPatient(wavelengthData, selectedPatientId) : [];
-        console.log('Selected patient:', selectedPatientId)
-        console.log('Filtered data:', filteredData)
+        // Function to get all existing patient ids and return an array
+        const getAllPatientIds = (data: Wavelength[]): string[] => {
+            const patientIds = Array.from(new Set(data.map(d => d.patient)));
+            return patientIds;
+        };
         
+        // Filter data based on patient
+        const allPatientIds = getAllPatientIds(wavelengthData);
+        const patientNumber = allPatientIds[currentPatient]
+        console.log("Current Patient: ", patientNumber)
+        let filteredData = patientNumber && typeof patientNumber === 'string' ? filterDataByPatient(wavelengthData, patientNumber) : [];
+        
+        // Move to next patient
+        const nextPatient = svg.append("g")
+            .append("text")
+            .text("Next Patient")
+            .attr('transform', `translate(${width - 100},${height + margin.bottom - 10})`)
+            .attr('fill', 'white')
+            .style('cursor', 'pointer')
+            .on('click', () => {
+                MoveToNextPatient();
+            });
+
+        // Function to move to the next patient
+        const MoveToNextPatient = () => {
+            // Get the next patient's ID
+            const nextPatientIndex = (currentPatient + 1) % allPatientIds.length;
+            setCurrentPatient(nextPatientIndex);
+            console.log("Next Patient: ", allPatientIds[nextPatientIndex])
+        }
+
         // Create scales
         const xScale = d3.scaleLinear()
             .domain([xMin, xMax])
