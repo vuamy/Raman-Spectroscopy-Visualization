@@ -1,5 +1,2 @@
 # Ignore node_modules directory
 node_modules/
-
-# Ignore specific CSV file
-data/combined_spectra_data.csv
