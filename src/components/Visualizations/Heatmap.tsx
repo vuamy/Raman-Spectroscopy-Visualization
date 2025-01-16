@@ -194,25 +194,26 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId, 
                     setSelectedLineRing(null);
                 }
             });
-        // Add label for each line
-        svg.selectAll(".line-label")
-            .data([1, 2, 3, 4, 5, 6, 7, 8])
-            .join("text")
-            .attr("class", "line-label")
-            .attr("x", d => {
-                const angle = angleScale(d);
-                // Ensure angle is defined and is a number
-                return typeof angle === "number" ? (radius + 30) * Math.cos((angle + 0.4) - Math.PI / 2) : 0;
-            })
-            .attr("y", d => {
-                const angle = angleScale(d);
-                // Ensure angle is defined and is a number
-                return typeof angle === "number" ? (radius + 18) * Math.sin((angle + 0.4) - Math.PI / 2) : 0;
-            })
-            .attr("text-anchor", "middle")
-            .attr("font-size", "12px")  // Make sure to include px for font-size
-            .attr("fill", "white")
-            .text(d => d < 5 ? `Line ${d}` : `Line ${d - 4}`);
+
+            // Add label for each line
+            svg.selectAll(".line-label")
+                .data([1, 2, 3, 4, 5, 6, 7, 8])
+                .join("text")
+                .attr("class", "line-label")
+                .attr("x", d => {
+                    const angle = angleScale(d);
+                    // Ensure angle is defined and is a number
+                    return typeof angle === "number" ? `${(radius + 30) * Math.cos((angle + 0.4) - Math.PI / 2)}` : "0";
+                })
+                .attr("y", d => {
+                    const angle = angleScale(d);
+                    // Ensure angle is defined and is a number
+                    return typeof angle === "number" ? `${(radius + 18) * Math.sin((angle + 0.4) - Math.PI / 2)}` : "0";
+                })
+                .attr("text-anchor", "middle")
+                .attr("font-size", "12px")  // Make sure to include px for font-size
+                .attr("fill", "white")
+                .text(d => d < 5 ? `Line ${d}` : `Line ${d - 4}`);
 
         // Add plot title
         const plotTitle = svg.append("g")

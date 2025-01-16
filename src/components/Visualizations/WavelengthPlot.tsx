@@ -195,11 +195,8 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
             
         const slider = sliderBottom(sliderScale)
             .ticks(10)
-            .default([xMin, xMax])
-            .fill("#C084FC")
-            .handle(d3.symbol().type(d3.symbolCircle).size(200)())
-            .on('onchange', ([min, max]: [number, number]) => {
-                xScale.domain([min, max]);
+            .on('onchange', (val: number) => {
+                xScale.domain([val, xMax]);
                 (svg.select('.x-axis') as unknown as d3.Selection<SVGGElement, unknown, null, undefined>).call(d3.axisBottom(xScale));
                 
                 // Update the lines without redrawing the whole plot
