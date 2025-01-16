@@ -23,7 +23,7 @@ interface Wavelength {
 
 interface InputProps {
     setSelectedWavelength?: (color: number | null) => void;
-    selectedPatientId?: (color: string | null) => void;
+    selectedPatientId?: string | null
     selectedLineRing?: ({line: number; ring: number} | null);
     theme: any;
 }

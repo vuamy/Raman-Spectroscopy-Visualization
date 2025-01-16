@@ -201,12 +201,12 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId, 
                 .join("text")
                 .attr("class", "line-label")
                 .attr("x", d => {
-                    const angle = angleScale(d);
+                    const angle = angleScale(d.toString()) as number;
                     // Ensure angle is defined and is a number
                     return typeof angle === "number" ? `${(radius + 30) * Math.cos((angle + 0.4) - Math.PI / 2)}` : "0";
                 })
                 .attr("y", d => {
-                    const angle = angleScale(d);
+                    const angle = angleScale(d.toString()) as number;
                     // Ensure angle is defined and is a number
                     return typeof angle === "number" ? `${(radius + 18) * Math.sin((angle + 0.4) - Math.PI / 2)}` : "0";
                 })
