@@ -48,7 +48,7 @@ function Layout() {
                 <WavelengthPlot 
                 theme={theme}
                 setSelectedWavelength={setSelectedWavelength}
-                selectedPatientId={selectedPatientId}
+                setSelectedPatientId={setSelectedPatientId}
                 selectedLineRing={selectedLineRing}
                 />
               </div> 

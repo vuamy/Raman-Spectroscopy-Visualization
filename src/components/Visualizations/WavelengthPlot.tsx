@@ -23,12 +23,12 @@ interface Wavelength {
 
 interface InputProps {
     setSelectedWavelength?: (color: number | null) => void;
-    selectedPatientId?: string | null
+    setSelectedPatientId?: ((id: string | null) => void) | null;
     selectedLineRing?: ({line: number; ring: number} | null);
     theme: any;
 }
 
-export default function WavelengthPlot({theme, setSelectedWavelength, selectedPatientId, selectedLineRing}:  InputProps) {
+export default function WavelengthPlot({theme, setSelectedWavelength, setSelectedPatientId, selectedLineRing}:  InputProps) {
     
     // Initialize use states
     const [wavelengthData, setWavelength] = useState<Wavelength[]>([]);
@@ -69,7 +69,7 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
         const svg = d3.select('#wavelength-svg')
         svg.selectAll("*").remove();
         initWavelength();
-    }, [wavelengthData, size, setSelectedWavelength, selectedPatientId, selectedLineRing, currentPatient])
+    }, [wavelengthData, size, setSelectedWavelength, setSelectedPatientId, selectedLineRing, currentPatient])
 
     // Initialize wavelength series plot
     function initWavelength() {
@@ -121,7 +121,6 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
         // Filter data based on patient
         const allPatientIds = getAllPatientIds(wavelengthData);
         const patientNumber = allPatientIds[currentPatient]
-        console.log("Current Patient: ", patientNumber)
         let filteredData = patientNumber && typeof patientNumber === 'string' ? filterDataByPatient(wavelengthData, patientNumber) : [];
         
         // Move to next patient
@@ -140,7 +139,6 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
             // Get the next patient's ID
             const nextPatientIndex = (currentPatient + 1) % allPatientIds.length;
             setCurrentPatient(nextPatientIndex);
-            console.log("Next Patient: ", allPatientIds[nextPatientIndex])
         }
 
         // Create scales
@@ -310,8 +308,9 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
                     .attr("x2", mouseX);
 
                 // Update selectedWavelength value
-                if (setSelectedWavelength) {
+                if (setSelectedWavelength && setSelectedPatientId) {
                     setSelectedWavelength(xValue);
+                    setSelectedPatientId(patientNumber);
                 }
 
                 // Optionally, update the tooltip to reflect current value

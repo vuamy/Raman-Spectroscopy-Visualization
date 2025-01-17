@@ -48,7 +48,7 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId, 
     useEffect(() => {
         // Call the data processing function
             const loadData = async () => {
-            const processedData = await processCSVData('../../data/combined_spectra_data.csv');
+            const processedData = await processCSVData('/raman-deploy/data/combined_spectra_data.csv');
             setHeatmap(processedData); // Update with only subset of data
 
             console.log(processedData)
