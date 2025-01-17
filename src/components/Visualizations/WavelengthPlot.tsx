@@ -52,7 +52,7 @@ export default function WavelengthPlot({theme, setSelectedWavelength, selectedPa
         // Call the data processing function
         const loadData = async () => {
             try {
-                const processedData = await processCSVData('../../data/combined_spectra_data.csv');
+                const processedData = await processCSVData('/raman-deploy/data/combined_spectra_data.csv');
                 setWavelength(processedData);
             } catch (error) {
                 console.error('Error in data loading and simplification:', error);
