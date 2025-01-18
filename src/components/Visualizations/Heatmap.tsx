@@ -13,6 +13,7 @@ interface Wavelength {
     patient: string;
     line: string | number;
     ring: string | number;
+    cancer: string | number;
     series: {
         wavelength: number;
         intensity: number;
@@ -211,38 +212,20 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId, 
                     return typeof angle === "number" ? `${(radius + 18) * Math.sin((angle + 0.4) - Math.PI / 2)}` : "0";
                 })
                 .attr("text-anchor", "middle")
-                .attr("font-size", "12px")  // Make sure to include px for font-size
+                .attr("font-size", "18px")  // Make sure to include px for font-size
                 .attr("fill", "white")
                 .text(d => d < 5 ? `Line ${d}` : `Line ${d - 4}`);
 
         // Add plot title
         const plotTitle = svg.append("g")
             .append("text")
-            .text("Spatial Variance of Selected Patient at Selected Wavelength")
-            .attr("font-size", "24px")
+            .text(`Spatial Variance of Patient #${selectedPatientId} at Wavelength ${selectedWavelength?.toFixed(2) ?? 0}nm`)
+            .attr("font-size", "30px")
             .attr("text-anchor", "middle")
             .attr("fill", "white")
             .attr("font-weight", "bold")
             .attr("y", -height/2 - 50)
             .attr("x", 0)
-
-        // Display patient id number
-        const patientIdDisplay = svg.append("g")
-            .append("text")
-            .text("Patient: " + selectedPatientId)
-            .attr('fill', 'white')
-            .attr('y', -100)
-            .attr('x', 170)
-            .attr("font-size", "12px")
-
-        // Display wavelength value
-        const wavelengthDisplay = svg.append("g")
-            .append("text")
-            .text("Wavelength: " + (Number(selectedWavelength ?? 0) > 0 ? (selectedWavelength ?? 0).toFixed(2) : 0))
-            .attr('fill', 'white')
-            .attr('y', -80)
-            .attr('x', 170)
-            .attr("font-size", "12px")
 
         // Create tooltip for hovering on points
         const tooltip = svg
@@ -265,7 +248,7 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId, 
             .attr("x", 10)
             .attr("y", 20)
             .attr("padding", 0)
-            .style("font-size", "10px")
+            .style("font-size", "18px")
             .style("font-family", "Arial, sans-serif");
 
         // Find minimum and maximum at wavelength
@@ -296,47 +279,80 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId, 
         });
 
         // Add a gradient rectangle
+        const gradientHeight = 150;
+
         svg.append("rect")
-            .attr("x", 0)
-            .attr("y", -height/2)
-            .attr("width", 0)
-            .attr("height", 200)
+            .attr("x", width / 2 + margin.right - 100)
+            .attr("y", height / 2 - 180 )
+            .attr("width", 10)
+            .attr("height", gradientHeight)
             .style("fill", "url(#heatmap-gradient)");
 
         // Add axis to indicate values
         const yScale = d3.scaleLinear()
             .domain([maxIntensity, minIntensity])
-            .range([-40, 110]);
+            .range([0, gradientHeight]);
 
         const axisRight = d3.axisRight(yScale)
-            .ticks(5)
+            .ticks(5);
 
         const axisGroup = svg.append("g")
-            .attr("transform", "translate(230, 0)") // Position to the right of the rectangle
+            .attr("transform", `translate(${width / 2 + margin.right - 90}, ${height /2 - 180})`) // Position to the right of the rectangle
             .call(axisRight);
 
         // Smaller font size
         axisGroup.selectAll(".tick text")
-            .style("font-size", "8px")
+            .style("font-size", "18px");
 
-        // Display minimum and maximum values
-        const minIntensityDisplay = svg.append("g")
-            .append("text")
-            .text(minIntensity.toFixed(2))
-            .attr('fill', 'white')
-            .attr('text-anchor', 'center')
-            .attr('y', 130)
-            .attr('x', 205)
-            .attr("font-size", "12px")
+        // Add title for the color scale
+        svg.append("text")
+            .attr("x", width / 2 + margin.right - 100)
+            .attr("y", height / 2)
+            .attr("text-anchor", "middle")
+            .attr("font-size", "18px")
+            .attr("fill", "white")
+            .text("Intensity Color Scale");
 
-        const maxIntensityDisplay = svg.append("g")
+
+        // Display patient id number
+        const patientIdDisplay = svg.append("g")
+        .append("text")
+        .text("Patient: " + selectedPatientId)
+        .attr('fill', 'white')
+        .attr('y', -height / 2 + 30)
+        .attr('x', width / 2 + 50)
+        .attr("font-size", "24px")
+        .attr("font-weight", "bold")
+        .attr("text-anchor", "end")
+
+        // Display wavelength value
+        const wavelengthDisplay = svg.append("g")
             .append("text")
-            .text(maxIntensity.toFixed(2))
+            .text("Wavelength: " + (Number(selectedWavelength ?? 0) > 0 ? (selectedWavelength ?? 0).toFixed(2) : 0))
             .attr('fill', 'white')
-            .attr('text-anchor', 'center')
-            .attr('y', -50 )
-            .attr('x', 205)
-            .attr("font-size", "12px")
+            .attr('y', -height / 2 + 60)
+            .attr('x', width / 2 + 50)
+            .attr("font-size", "24px")
+            .attr("font-weight", "bold")
+            .attr("text-anchor", "end")
+        // // Display minimum and maximum values
+        // const minIntensityDisplay = svg.append("g")
+        //     .append("text")
+        //     .text(minIntensity.toFixed(2))
+        //     .attr('fill', 'white')
+        //     .attr('text-anchor', 'center')
+        //     .attr('y', 130)
+        //     .attr('x', 205)
+        //     .attr("font-size", "18px")
+
+        // const maxIntensityDisplay = svg.append("g")
+        //     .append("text")
+        //     .text(maxIntensity.toFixed(2))
+        //     .attr('fill', 'white')
+        //     .attr('text-anchor', 'center')
+        //     .attr('y', -50 )
+        //     .attr('x', 205)
+        //     .attr("font-size", "18px")
 
     }
 

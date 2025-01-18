@@ -15,6 +15,7 @@ interface Wavelength {
     patient: string;
     line: number;
     ring: number;
+    cancer: number;
     series: {
         wavelength: number;
         intensity: number;
@@ -34,7 +35,7 @@ export default function WavelengthPlot({theme, setSelectedWavelength, setSelecte
     const [wavelengthData, setWavelength] = useState<Wavelength[]>([]);
     const wavelengthRef = useRef<HTMLDivElement>(null);
     const [size, setSize] = useState<ComponentSize>({ width: 0, height: 0 });
-    const margin: Margin = { top: 20, right: 50, bottom: 100, left: 100 };
+    const margin: Margin = { top: 40, right: 50, bottom: 100, left: 100 };
     const onResize = useDebounceCallback((size: ComponentSize) => setSize(size), 200)
     const [currentPatient, setCurrentPatient] = useState(0 as number);
 
@@ -105,6 +106,7 @@ export default function WavelengthPlot({theme, setSelectedWavelength, setSelecte
                     patient: d.patient,
                     line: d.line,
                     ring: d.ring,
+                    cancer: d.cancer,
                     series: d.series.map(point => ({
                         wavelength: point.wavelength,
                         intensity: point.intensity
@@ -124,21 +126,55 @@ export default function WavelengthPlot({theme, setSelectedWavelength, setSelecte
         let filteredData = patientNumber && typeof patientNumber === 'string' ? filterDataByPatient(wavelengthData, patientNumber) : [];
         
         // Move to next patient
-        const nextPatient = svg.append("g")
-            .append("text")
-            .text("Next Patient")
-            .attr('transform', `translate(${width - 100},${height + margin.bottom - 10})`)
-            .attr('fill', 'white')
+        const nextPatientButton = svg.append("foreignObject")
+            .attr('width', 150)
+            .attr('height', 30)
+            .attr('transform', `translate(${width - 100},${-margin.top / 2 -15})`)
+            .append("xhtml:button")
+            .style('width', '150px')
+            .style('height', '30px')
+            .style('background-color', theme.palette.primary.main)
+            .style('color', 'white')
+            .style('border', 'none')
+            .style('font-size', '18px')
             .style('cursor', 'pointer')
+            .style('border-radius', '10px') // Add round corners
+            .text("Next Patient")
             .on('click', () => {
-                MoveToNextPatient();
+            moveToNextPatient();
+            });
+
+        // Move to previous patient
+        const prevPatientButton = svg.append("foreignObject")
+            .attr('width', 150)
+            .attr('height', 30)
+            .attr('transform', `translate(${width -265},${-margin.top / 2 -15})`)
+            .append("xhtml:button")
+            .style('width', '150px')
+            .style('height', '30px')
+            .style('background-color', theme.palette.primary.main)
+            .style('color', 'white')
+            .style('border', 'none')
+            .style('cursor', 'pointer')
+            .style('font-size', '18px')
+            .style('border-radius', '10px') // Add round corners
+            .text("Previous Patient")
+            .on('click', () => {
+            moveToPrevPatient();
             });
 
         // Function to move to the next patient
-        const MoveToNextPatient = () => {
+        const moveToNextPatient = () => {
             // Get the next patient's ID
             const nextPatientIndex = (currentPatient + 1) % allPatientIds.length;
             setCurrentPatient(nextPatientIndex);
+        }
+
+        // Function to move to the previous patient
+        const moveToPrevPatient = () => {
+            // Get the previous patient's ID
+            const prevPatientIndex = (currentPatient - 1 + allPatientIds.length) % allPatientIds.length;
+            setCurrentPatient(prevPatientIndex);
         }
 
         // Create scales
@@ -158,14 +194,15 @@ export default function WavelengthPlot({theme, setSelectedWavelength, setSelecte
         // Create axes
         const xAxis = svg.append("g")
             .call(d3.axisBottom(xScale))
-            .attr('transform', `translate(0,${height})`)
+            .attr('transform', `translate(0,${height + 45})`)
             .attr('class', 'x-axis')
-            .attr('stroke', 'white')
+            .style('font-size', '18px');
 
         const yAxis = svg.append("g")
             .call(d3.axisLeft(yScale))
             .attr('class', 'y-axis')
-            .attr('stroke', 'white')
+            .attr('transform', `translate(0,45)`)
+            .style('font-size', '18px');
 
         // Prevent wavelength lines from going outside bounds when slider range changes
         svg.append("defs")
@@ -173,94 +210,61 @@ export default function WavelengthPlot({theme, setSelectedWavelength, setSelecte
             .attr("id", "clip")
             .append("rect")
             .attr("x", 0)
-            .attr("y", 0)
+            .attr("y", 45)
             .attr("width", width)
             .attr("height", height);
 
         const wavelengthGroup = svg.append("g")
             .attr("class", "wavelength-group")
-            .attr("clip-path", "url(#clip)");
+            .attr("clip-path", "url(#clip)")
+            .attr("transform", `translate(0,45)`);
 
         // Add wavelength lines for each patient
-            wavelengthGroup.selectAll('.wavelength-line')
-                .data(filteredData)
-                .join('path')
-                .attr('class', 'wavelength-line')
-                .attr('d', d => lineGenerator(d.series)!)
-                .attr('fill', 'none')
-                .attr('stroke', (d, i) => color.range()[i % 9])
-                .attr('stroke-width', 1.5);
+        wavelengthGroup.selectAll('.wavelength-line')
+            .data(filteredData)
+            .join('path')
+            .attr('class', 'wavelength-line')
+            .attr('d', d => lineGenerator(d.series)!)
+            .attr('fill', 'none')
+            .attr('stroke', (d, i) => color.range()[i % 9])
+            .attr('stroke-width', 1.5);
         
         if (selectedLineRing === null) {
             wavelengthGroup.selectAll('.wavelength-line')
-                .attr('stroke', (d, i) => color.range()[i % 9])
-                .attr('opacity', 1)
+            .attr('stroke', (d, i) => color.range()[i % 9])
+            .attr('opacity', 1)
         } else {
             wavelengthGroup.selectAll('.wavelength-line')
-                .attr('opacity', (d: Wavelength) => (d.line === selectedLineRing?.line && d.ring === selectedLineRing?.ring) ? 1 : 0)
+            .attr('opacity', (d: Wavelength) => (d.line === selectedLineRing?.line && d.ring === selectedLineRing?.ring) ? 1 : 0)
         }
 
         // Add axis titles
         const xAxisTitle = svg.append("g")
             .append("text")
             .text("Wavelength (nm)")
-            .attr('transform', `translate(${width / 2}, ${height + margin.bottom / 2 - 15})`)
+            .attr('transform', `translate(${width / 2}, ${height + margin.bottom / 2 + 45})`)
             .style('text-anchor', 'middle')
-            .style('font-size', '.8rem')
+            .style('font-size', '24px')
             .style("fill", theme.palette.text.primary);
 
         const yAxisTitle = svg.append("g")
             .append("text")
-            .text("Intensity")
-            .attr('transform', `translate(${-margin.left / 2 + 5}, ${(height + margin.top) / 2}) rotate(-90)`)
-            .style('font-size', '.8rem')
+            .text("Normalized Intensity")
+            .style('text-anchor', 'middle')
+            .attr('transform', `translate(${-margin.left / 2 + 5}, ${(height + margin.top) / 2 + 40}) rotate(-90)`)
+            .style('font-size', '24px')
             .style("fill", theme.palette.text.primary);
 
-        // Define wavelength slider
-        // const sliderScale = d3.scaleLinear()
-        //     .domain([xMin, xMax])
-        //     .range([margin.left, width-margin.right]);
-            
-        // const slider = sliderBottom(sliderScale)
-        //     .ticks(10)
-        //     .on('onchange', (val: number) => {
-        //         xScale.domain([val, xMax]);
-        //         (svg.select('.x-axis') as unknown as d3.Selection<SVGGElement, unknown, null, undefined>).call(d3.axisBottom(xScale));
-                
-        //         // Update the lines without redrawing the whole plot
-        //         wavelengthGroup.selectAll('.wavelength-line')
-        //             .transition()
-        //             .duration(500)
-        //             .attr('d', (d: Wavelength) => lineGenerator(d.series));  // Smooth transition
-        //     });
-
-        // Add to slider container
-        // const sliderContainer = svg.append("g")
-        //     .attr("class", "slider")
-        //     .attr('width', 400)
-        //     .attr('height', 100)
-        //     .append('g')
-        //     .attr('transform', `translate(0,${height + margin.bottom - 65})`)
-        //     .call(slider);
-
-        // Change visual display of slider
-        svg.selectAll('.slider .tick text')
-            .style('font-size', '10px')
-            .style('fill', 'white')
-            .style('y', '-20px')
-        
-        svg.selectAll('.parameter-value text')
-            .style('font-size', '12px')
-            .style('fill', "#C084FC")
 
         // Add plot title
         const plotTitle = svg.append("g")
             .append("text")
-            .text("Raman Spectra of Selected Patient")
-            .attr('transform', `translate(${width / 2},${-margin.top / 2})`)
+            .text(`Raman Spectra of ${filteredData[0]?.cancer === 1 ? 'Cancer' : 'Healthy'} Patient #${patientNumber} `)
+            .attr('transform', `translate(${width / 2},${-margin.top / 2  + 60})`)
             .attr('fill', 'white')
             .attr('font-weight', 'bold')
             .style('text-anchor', 'middle')
+            .style('font-size', '30px');
 
         // Create tooltip for hovering over plot that shows coordinates
         const tooltip = d3.select("body")
@@ -271,26 +275,25 @@ export default function WavelengthPlot({theme, setSelectedWavelength, setSelecte
             .style("color", "white")
             .style("padding", "5px")
             .style("border-radius", "3px")
-            .style("font-size", "10px")
+            .style("font-size", "18px")
             .style("display", "none");
+            const hoverGroup = svg.append("g").attr("class", "hover-group");
 
-        const hoverGroup = svg.append("g").attr("class", "hover-group");
-
-        // Vertical and horizontal lines connecting to axis
+        // Vertical line connecting to axis
         const verticalLine = hoverGroup.append("line")
-            .attr("stroke", "lightgray")
+            .attr("stroke", "white")
             .style("opacity", 0);
 
         const horizontalLine = hoverGroup.append("line")
-            .attr("stroke", "lightgray")
+            .attr("stroke", "white")
             .style("opacity", 0);
 
         const selectWavelength = svg.append("line")
-            .attr("stroke", "gray")
-            .attr("stroke-width", 2)
+            .attr("stroke", "white")
+            .attr("stroke-width", 10)
             .style("opacity", 0)
-            .attr("y1", 0)
-            .attr("y2", height);
+            .attr("y1", 45)
+            .attr("y2", height + 45);
 
         // Define drag behavior
         const drag = d3.drag()
@@ -376,16 +379,29 @@ export default function WavelengthPlot({theme, setSelectedWavelength, setSelecte
             horizontalLine.style("opacity", 0);
             })
             .on("click", (event) => {
-            const [mouseX] = d3.pointer(event);
-            const xValue = xScale.invert(mouseX);
-            selectWavelength.style("opacity", 0.7);
-            selectWavelength
-                .attr("x1", mouseX)
-                .attr("x2", mouseX)
-                .attr("y1", 0)
-                .attr("y2", height);
+                const [mouseX] = d3.pointer(event);
+                const xValue = xScale.invert(mouseX);
+                selectWavelength.style("opacity", 0.7);
+                selectWavelength
+                    .attr("x1", mouseX)
+                    .attr("x2", mouseX)
+                    .attr("y1", 65)
+                    .attr("y2", height + 45);
 
-            tooltip.style("display", "none");
+                // Update selectedWavelength value
+                if (setSelectedWavelength && setSelectedPatientId) {
+                    setSelectedWavelength(xValue);
+                    setSelectedPatientId(patientNumber);
+                }
+
+                // Optionally, update the tooltip to reflect current value
+                tooltip
+                    .style("display", "block")
+                    .style("left", `${event.pageX + 10}px`)
+                    .style("top", `${event.pageY - 10}px`)
+                    .html(`Wavelength: ${xValue.toFixed(0)}`);
+
+            // tooltip.style("display", "none");
 
                 if (setSelectedWavelength) {
         setSelectedWavelength(xValue);

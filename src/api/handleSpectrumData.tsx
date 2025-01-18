@@ -10,6 +10,7 @@ export const processCSVData = async (filePath: string) => {
       intensity: +d.Intensity,
       line: d.Line,
       ring: d.Ring,
+      cancer: Number(d.cancer),
     }));
     // Group wavelengths per patient
     const groupedData = d3.group(csvData, d => d.id);
@@ -18,6 +19,7 @@ export const processCSVData = async (filePath: string) => {
       patient: values[0].patient,
       line: Number(values[0].line),
       ring: Number(values[0].ring),
+      cancer: values[0].cancer,
       series: values.map(v => ({ wavelength: v.wavelength, intensity: v.intensity})),
     }));
 

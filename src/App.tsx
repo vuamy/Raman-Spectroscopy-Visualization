@@ -35,22 +35,22 @@ function Layout() {
     <div>
       <Navbar />
       <Grid container spacing={1} direction='column' id="main-container">
-          <Grid item xs={8} className="plot" sx={{ height: '100%' }}>
-            <div style={{ width: '100%', height: '100%'}}> 
-                <Heatmap theme={theme} 
-                selectedWavelength={selectedWavelength} 
-                selectedPatientId={selectedPatientId}
-                setSelectedLineRing={setSelectedLineRing}/>
-              </div> 
-          </Grid>
           <Grid item xs={4} className="plot" sx={{ height: '100%' }}>
-              <div style={{ width: '100%', height: '100%'}}> 
+            <div style={{ width: '100%', height: '100%'}}> 
                 <WavelengthPlot 
                 theme={theme}
                 setSelectedWavelength={setSelectedWavelength}
                 setSelectedPatientId={setSelectedPatientId}
                 selectedLineRing={selectedLineRing}
                 />
+              </div> 
+          </Grid>
+          <Grid item xs={8} className="plot" sx={{ height: '100%' }}>
+              <div style={{ width: '100%', height: '100%'}}> 
+              <Heatmap theme={theme} 
+                selectedWavelength={selectedWavelength} 
+                selectedPatientId={selectedPatientId}
+                setSelectedLineRing={setSelectedLineRing}/>
               </div> 
         </Grid>
       </Grid>
