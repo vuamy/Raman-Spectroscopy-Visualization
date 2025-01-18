@@ -129,7 +129,7 @@ export default function WavelengthPlot({theme, setSelectedWavelength, setSelecte
         const nextPatientButton = svg.append("foreignObject")
             .attr('width', 150)
             .attr('height', 30)
-            .attr('transform', `translate(${width - 100},${-margin.top / 2 -15})`)
+            .attr('transform', `translate(${width - 160},${-margin.top / 2 -15})`)
             .append("xhtml:button")
             .style('width', '150px')
             .style('height', '30px')
@@ -148,7 +148,7 @@ export default function WavelengthPlot({theme, setSelectedWavelength, setSelecte
         const prevPatientButton = svg.append("foreignObject")
             .attr('width', 150)
             .attr('height', 30)
-            .attr('transform', `translate(${width -265},${-margin.top / 2 -15})`)
+            .attr('transform', `translate(${width -320},${-margin.top / 2 -15})`)
             .append("xhtml:button")
             .style('width', '150px')
             .style('height', '30px')
@@ -194,25 +194,25 @@ export default function WavelengthPlot({theme, setSelectedWavelength, setSelecte
         // Create axes
         const xAxis = svg.append("g")
             .call(d3.axisBottom(xScale))
-            .attr('transform', `translate(0,${height + 45})`)
+            .attr('transform', `translate(0,${height + 40})`)
             .attr('class', 'x-axis')
             .style('font-size', '18px');
 
         const yAxis = svg.append("g")
             .call(d3.axisLeft(yScale))
             .attr('class', 'y-axis')
-            .attr('transform', `translate(0,45)`)
+            .attr('transform', `translate(0,40)`)
             .style('font-size', '18px');
 
-        // Prevent wavelength lines from going outside bounds when slider range changes
-        svg.append("defs")
-            .append("clipPath")
-            .attr("id", "clip")
-            .append("rect")
-            .attr("x", 0)
-            .attr("y", 45)
-            .attr("width", width)
-            .attr("height", height);
+        // // Prevent wavelength lines from going outside bounds when slider range changes
+        // svg.append("defs")
+        //     .append("clipPath")
+        //     .attr("id", "clip")
+        //     .append("rect")
+        //     .attr("x", 0)
+        //     .attr("y", 45)
+        //     .attr("width", width)
+        //     .attr("height", height);
 
         const wavelengthGroup = svg.append("g")
             .attr("class", "wavelength-group")
@@ -259,7 +259,7 @@ export default function WavelengthPlot({theme, setSelectedWavelength, setSelecte
         // Add plot title
         const plotTitle = svg.append("g")
             .append("text")
-            .text(`Raman Spectra of ${filteredData[0]?.cancer === 1 ? 'Cancer' : 'Healthy'} Patient #${patientNumber} `)
+            .text(`Raman Spectra of ${filteredData[0]?.cancer === 1 ? 'Healthy' : 'Cancer'} Patient #${patientNumber} `)
             .attr('transform', `translate(${width / 2},${-margin.top / 2  + 60})`)
             .attr('fill', 'white')
             .attr('font-weight', 'bold')

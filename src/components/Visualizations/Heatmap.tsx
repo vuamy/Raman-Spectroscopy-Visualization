@@ -314,27 +314,27 @@ export default function Heatmap({ theme, selectedWavelength, selectedPatientId, 
             .text("Intensity Color Scale");
 
 
-        // Display patient id number
-        const patientIdDisplay = svg.append("g")
-        .append("text")
-        .text("Patient: " + selectedPatientId)
-        .attr('fill', 'white')
-        .attr('y', -height / 2 + 30)
-        .attr('x', width / 2 + 50)
-        .attr("font-size", "24px")
-        .attr("font-weight", "bold")
-        .attr("text-anchor", "end")
+        // // Display patient id number
+        // const patientIdDisplay = svg.append("g")
+        // .append("text")
+        // .text("Patient: " + selectedPatientId)
+        // .attr('fill', 'white')
+        // .attr('y', -height / 2 + 30)
+        // .attr('x', width / 2 + 50)
+        // .attr("font-size", "24px")
+        // .attr("font-weight", "bold")
+        // .attr("text-anchor", "end")
 
-        // Display wavelength value
-        const wavelengthDisplay = svg.append("g")
-            .append("text")
-            .text("Wavelength: " + (Number(selectedWavelength ?? 0) > 0 ? (selectedWavelength ?? 0).toFixed(2) : 0))
-            .attr('fill', 'white')
-            .attr('y', -height / 2 + 60)
-            .attr('x', width / 2 + 50)
-            .attr("font-size", "24px")
-            .attr("font-weight", "bold")
-            .attr("text-anchor", "end")
+        // // Display wavelength value
+        // const wavelengthDisplay = svg.append("g")
+        //     .append("text")
+        //     .text("Wavelength: " + (Number(selectedWavelength ?? 0) > 0 ? (selectedWavelength ?? 0).toFixed(2) : 0))
+        //     .attr('fill', 'white')
+        //     .attr('y', -height / 2 + 60)
+        //     .attr('x', width / 2 + 50)
+        //     .attr("font-size", "24px")
+        //     .attr("font-weight", "bold")
+        //     .attr("text-anchor", "end")
         // // Display minimum and maximum values
         // const minIntensityDisplay = svg.append("g")
         //     .append("text")
